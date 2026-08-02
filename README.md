@@ -80,5 +80,5 @@ Many women face challenges in managing their personal finances due to limited fi
 
 ---
 
-**Developed by:** [Your Name]
+**Developed by:** Aemi Patel
 **Subject:** Project-I CEUP301 (Semester V)
