@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - SheFinance</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="dashboard-body">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <a href="index.html"><h2>She<span>Finance</span></h2></a>
+        </div>
+        <ul class="sidebar-menu">
+            <li class="active"><a href="#"><i class="fa-solid fa-house"></i> Overview</a></li>
+            <li><a href="#"><i class="fa-solid fa-wallet"></i> Budget Planner</a></li>
+            <li><a href="#"><i class="fa-solid fa-bullseye"></i> Savings Goals</a></li>
+            <li><a href="#"><i class="fa-solid fa-robot"></i> AI Chatbot</a></li>
+            <li><a href="#"><i class="fa-solid fa-building-columns"></i> Govt Schemes</a></li>
+            <li><a href="#"><i class="fa-solid fa-book-open-reader"></i> Education Hub</a></li>
+        </ul>
+        <div class="sidebar-bottom">
+            <a href="index.html" class="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="dashboard-main">
+        <!-- Header -->
+        <header class="dashboard-header">
+            <div class="header-title">
+                <h2 id="welcome-msg">Welcome back! 👋</h2>
+                <p>Here is your financial summary for this month.</p>
+            </div>
+            <div class="header-profile">
+                <div class="profile-pic">
+                    <img id="profile-img" src="https://ui-avatars.com/api/?name=User&background=c99f55&color=fff" alt="Profile">
+                </div>
+            </div>
+        </header>
+
+        <!-- Dashboard Content -->
+        <section class="dashboard-content">
+            <!-- Summary Cards -->
+            <div class="summary-cards">
+                <div class="card balance-card">
+                    <div class="card-icon"><i class="fa-solid fa-wallet"></i></div>
+                    <h3>Total Balance</h3>
+                    <h2>₹ 45,200</h2>
+                    <p class="positive"><i class="fa-solid fa-arrow-trend-up"></i> +12% from last month</p>
+                </div>
+                <div class="card expense-card">
+                    <div class="card-icon"><i class="fa-solid fa-chart-line"></i></div>
+                    <h3>Monthly Expenses</h3>
+                    <h2>₹ 12,500</h2>
+                    <p class="positive"><i class="fa-solid fa-arrow-trend-down"></i> -5% from last month (Good!)</p>
+                </div>
+                <div class="card health-card">
+                    <div class="card-icon"><i class="fa-solid fa-heart-pulse"></i></div>
+                    <h3>Financial Health</h3>
+                    <h2>85 / 100</h2>
+                    <p class="positive">Excellent! Keep saving.</p>
+                </div>
+            </div>
+            
+            <!-- Bottom Widgets -->
+            <div class="dashboard-widgets">
+                <!-- Recent Transactions -->
+                <div class="widget">
+                    <h3>Recent Transactions</h3>
+                    <ul class="transaction-list">
+                        <li>
+                            <div class="tx-info"><div class="tx-icon"><i class="fa-solid fa-cart-shopping"></i></div> Groceries</div>
+                            <div class="tx-amount negative">- ₹ 2,500</div>
+                        </li>
+                        <li>
+                            <div class="tx-info"><div class="tx-icon"><i class="fa-solid fa-bolt"></i></div> Electricity Bill</div>
+                            <div class="tx-amount negative">- ₹ 1,200</div>
+                        </li>
+                        <li>
+                            <div class="tx-info"><div class="tx-icon"><i class="fa-solid fa-briefcase"></i></div> Salary</div>
+                            <div class="tx-amount positive">+ ₹ 35,000</div>
+                        </li>
+                    </ul>
+                </div>
+                <!-- AI Prediction -->
+                <div class="widget ai-widget">
+                    <h3><i class="fa-solid fa-wand-magic-sparkles"></i> AI Savings Prediction</h3>
+                    <div class="ai-box">
+                        <p>Based on your current spending habits, you are on track to save <strong>₹ 15,000</strong> this month! ✨</p>
+                        <p><em>Suggestion: Consider investing 10% of this into a Mutual Fund for long-term growth.</em></p>
+                        <a href="#" class="btn btn-primary" style="margin-top: 15px;">Ask AI Chatbot</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var userName = localStorage.getItem('userName');
+            
+            if (userName) {
+                // Capitalize first letter of the name
+                var formattedName = userName.charAt(0).toUpperCase() + userName.slice(1);
+                
+                // Set the Welcome text
+                document.getElementById('welcome-msg').innerText = "Welcome back, " + formattedName + "! 👋";
+                
+                // Set the Profile Image with their initials
+                document.getElementById('profile-img').src = "https://ui-avatars.com/api/?name=" + encodeURIComponent(formattedName) + "&background=c99f55&color=fff";
+            }
+        });
+    </script>
+</body>
+</html>

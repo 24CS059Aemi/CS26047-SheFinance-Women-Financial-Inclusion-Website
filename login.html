@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In - SheFinance</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body class="auth-page">
+    <div class="auth-container">
+        <div class="logo">
+            <a href="index.html">
+                <h2>She<span>Finance</span></h2>
+            </a>
+        </div>
+
+        <h3 style="margin-bottom: 20px;">Welcome Back</h3>
+        <p style="color: var(--text-light); margin-bottom: 30px; font-size: 0.9rem;">Sign in to continue to your
+            dashboard.</p>
+
+        <form class="auth-form" action="dashboard.html" onsubmit="saveLoginName()">
+            <div class="input-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" placeholder="Enter your email" required>
+            </div>
+
+            <div class="input-group">
+                <label for="password">Password</label>
+                <div class="password-wrapper">
+                    <input type="password" id="password" placeholder="Enter your password" required>
+                    <i class="fa-regular fa-eye-slash toggle-password" onclick="togglePassword('password', this)"></i>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Sign In</button>
+
+            <div class="divider"><span>OR</span></div>
+
+            <!-- Google Identity Services Button -->
+            <div id="g_id_onload"
+                data-client_id="220990349271-16bitos8lvag5d1thbdhhkt2da0mq5g9.apps.googleusercontent.com"
+                data-context="signin" data-ux_mode="popup" data-callback="handleCredentialResponse"
+                data-auto_prompt="false">
+            </div>
+
+            <div class="g_id_signin" data-type="standard" data-shape="rectangular" data-theme="outline"
+                data-text="signin_with" data-size="large" data-logo_alignment="center"
+                style="display: flex; justify-content: center;">
+            </div>
+        </form>
+
+        <div class="auth-links">
+            <p>Don't have an account? <a href="register.html">Get Started</a></p>
+        </div>
+
+        <!-- Google Auth Script -->
+        <script src="https://accounts.google.com/gsi/client" async defer></script>
+        <script>
+            function handleCredentialResponse(response) {
+                console.log("Google Token Received:", response.credential);
+
+                // Send the token to our Node.js backend
+                fetch('http://localhost:3000/api/google-login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ credential: response.credential })
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            localStorage.setItem('userName', data.user.name);
+                            alert('Login successful! A welcome email has been sent to you.');
+                            window.location.href = 'dashboard.html';
+                        } else {
+                            alert('Login failed!');
+                        }
+                    })
+                    .catch(err => {
+                        console.error("Error communicating with backend:", err);
+                        alert("Make sure the Node.js backend is running!");
+                    });
+            }
+        </script>
+        <script>
+            function togglePassword(inputId, icon) {
+                const input = document.getElementById(inputId);
+                if (input.type === "password") {
+                    input.type = "text";
+                    icon.classList.remove("fa-eye-slash");
+                    icon.classList.add("fa-eye");
+                } else {
+                    input.type = "password";
+                    icon.classList.remove("fa-eye");
+                    icon.classList.add("fa-eye-slash");
+                }
+            }
+
+            function saveLoginName() {
+                var email = document.getElementById('email').value;
+                var name = email.split('@')[0]; // Extract name from email
+                localStorage.setItem('userName', name);
+            }
+        </script>
+</body>
+
+</html>
