@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budget Planner - SheFinance</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .budget-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 15px; }
+        .budget-month-select { display: flex; align-items: center; gap: 12px; }
+        .budget-month-select input[type="month"] { padding: 10px 15px; border: 1px solid #ddd; border-radius: 8px; font-family: 'Outfit', sans-serif; outline: none; font-size: 1rem; }
+        .budget-month-select input[type="month"]:focus { border-color: var(--secondary-color); }
+
+        .budget-overview { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px; }
+        .budget-overview .card h2 { font-size: 1.6rem; }
+        .budget-overview .card.over-budget h2 { color: #e74c3c; }
+
+        .budget-progress-bar { width: 100%; height: 8px; background: #eee; border-radius: 10px; margin-top: 10px; overflow: hidden; }
+        .budget-progress-fill { height: 100%; border-radius: 10px; transition: width 0.6s ease; }
+        .fill-green { background: linear-gradient(90deg, #2ecc71, #27ae60); }
+        .fill-orange { background: linear-gradient(90deg, #f39c12, #e67e22); }
+        .fill-red { background: linear-gradient(90deg, #e74c3c, #c0392b); }
+
+        .budget-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
+        .budget-card { background: #fff; border-radius: 15px; padding: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .budget-card h3 { font-size: 1.2rem; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #eee; padding-bottom: 12px; }
+        .budget-card h3 i { color: var(--secondary-color); }
+
+        .category-budget-item { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid #f5f5f5; }
+        .category-budget-item:last-child { border-bottom: none; }
+        .cat-info { display: flex; align-items: center; gap: 12px; flex: 1; }
+        .cat-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; }
+        .cat-icon.food { background: rgba(231,76,60,0.1); color: #e74c3c; }
+        .cat-icon.rent { background: rgba(52,152,219,0.1); color: #3498db; }
+        .cat-icon.transport { background: rgba(155,89,182,0.1); color: #9b59b6; }
+        .cat-icon.shopping { background: rgba(241,196,15,0.1); color: #f1c40f; }
+        .cat-icon.bills { background: rgba(230,126,34,0.1); color: #e67e22; }
+        .cat-icon.health { background: rgba(46,204,113,0.1); color: #2ecc71; }
+        .cat-icon.education { background: rgba(52,73,94,0.1); color: #34495e; }
+        .cat-icon.entertainment { background: rgba(231,76,60,0.1); color: #e74c3c; }
+        .cat-icon.other { background: rgba(149,165,166,0.1); color: #95a5a6; }
+
+        .cat-details { flex: 1; }
+        .cat-details h4 { font-family: 'Outfit', sans-serif; font-size: 0.95rem; font-weight: 600; margin-bottom: 4px; }
+        .cat-details .cat-amounts { font-size: 0.82rem; color: var(--text-light); }
+        .cat-details .cat-amounts span { font-weight: 600; }
+        .cat-progress { width: 120px; }
+        .cat-progress-bar { width: 100%; height: 6px; background: #eee; border-radius: 6px; overflow: hidden; }
+        .cat-progress-fill { height: 100%; border-radius: 6px; transition: width 0.5s ease; }
+        .cat-percent { font-size: 0.78rem; color: var(--text-light); text-align: right; margin-top: 3px; }
+        .cat-budget-input { width: 90px; padding: 6px 10px; border: 1px solid #ddd; border-radius: 6px; font-family: 'Outfit', sans-serif; text-align: right; outline: none; }
+        .cat-budget-input:focus { border-color: var(--secondary-color); }
+
+        .btn-save-budget { display: flex; align-items: center; gap: 8px; padding: 12px 24px; background: var(--secondary-color); color: #fff; border: none; border-radius: 10px; font-family: 'Outfit', sans-serif; font-weight: 600; cursor: pointer; transition: all 0.3s ease; font-size: 0.95rem; }
+        .btn-save-budget:hover { background: var(--secondary-hover); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(201,159,85,0.3); }
+
+        .budget-tip { background: linear-gradient(135deg, var(--primary-color), #2a5266); color: #fff; border-radius: 15px; padding: 25px; margin-top: 25px; }
+        .budget-tip h3 { color: var(--secondary-color); margin-bottom: 10px; border: none; padding: 0; }
+        .budget-tip p { font-size: 0.95rem; line-height: 1.7; opacity: 0.9; }
+        .budget-tip strong { color: var(--secondary-color); }
+
+        @media (max-width: 992px) {
+            .budget-overview { grid-template-columns: repeat(2, 1fr); }
+            .budget-grid { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 576px) {
+            .budget-overview { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body class="dashboard-body">
+
+    <aside class="sidebar">
+        <div class="sidebar-logo"><a href="index.html"><h2>She<span>Finance</span></h2></a></div>
+        <ul class="sidebar-menu">
+            <li><a href="dashboard.html"><i class="fa-solid fa-house"></i> Overview</a></li>
+            <li><a href="tracker.html"><i class="fa-solid fa-money-bill-transfer"></i> Income & Expense</a></li>
+            <li class="active"><a href="budget.html"><i class="fa-solid fa-wallet"></i> Budget Planner</a></li>
+            <li><a href="savings.html"><i class="fa-solid fa-bullseye"></i> Savings Goals</a></li>
+            <li><a href="chatbot.html"><i class="fa-solid fa-robot"></i> AI Chatbot</a></li>
+            <li><a href="schemes.html"><i class="fa-solid fa-building-columns"></i> Govt Schemes</a></li>
+            <li><a href="education.html"><i class="fa-solid fa-book-open-reader"></i> Education Hub</a></li>
+            <li><a href="reports.html"><i class="fa-solid fa-chart-pie"></i> Reports</a></li>
+        </ul>
+        <div class="sidebar-bottom">
+            <a href="index.html" class="logout-btn" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+        </div>
+    </aside>
+
+    <main class="dashboard-main">
+        <header class="dashboard-header">
+            <div class="header-title">
+                <h2>Monthly Budget Planner</h2>
+                <p>Set spending limits for each category and keep your finances on track.</p>
+            </div>
+            <div class="header-profile">
+                <a href="profile.html"><div class="profile-pic"><img id="profile-img" src="https://ui-avatars.com/api/?name=User&background=c99f55&color=fff" alt="Profile"></div></a>
+                <span id="user-name" class="user-name"></span>
+            </div>
+        </header>
+
+        <!-- Month Selector & Save -->
+        <div class="budget-header-row">
+            <div class="budget-month-select">
+                <i class="fa-solid fa-calendar-days" style="color:var(--secondary-color);font-size:1.2rem;"></i>
+                <input type="month" id="budget-month" onchange="loadBudgetData()">
+            </div>
+            <button class="btn-save-budget" onclick="saveBudget()">
+                <i class="fa-solid fa-floppy-disk"></i> Save Budget
+            </button>
+        </div>
+
+        <!-- Overview Cards -->
+        <div class="budget-overview">
+            <div class="card">
+                <div class="card-icon"><i class="fa-solid fa-wallet"></i></div>
+                <h3>Total Budget</h3>
+                <h2 id="total-budget">₹ 0</h2>
+            </div>
+            <div class="card">
+                <div class="card-icon"><i class="fa-solid fa-credit-card"></i></div>
+                <h3>Total Spent</h3>
+                <h2 id="total-spent">₹ 0</h2>
+            </div>
+            <div class="card" id="remaining-card">
+                <div class="card-icon"><i class="fa-solid fa-piggy-bank"></i></div>
+                <h3>Remaining</h3>
+                <h2 id="total-remaining">₹ 0</h2>
+            </div>
+            <div class="card">
+                <div class="card-icon"><i class="fa-solid fa-chart-simple"></i></div>
+                <h3>Budget Used</h3>
+                <h2 id="budget-percent">0%</h2>
+                <div class="budget-progress-bar">
+                    <div class="budget-progress-fill fill-green" id="overall-progress" style="width:0%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Budget Categories -->
+        <div class="budget-grid">
+            <div class="budget-card">
+                <h3><i class="fa-solid fa-sliders"></i> Set Category Budgets</h3>
+                <div id="budget-inputs">
+                    <!-- Generated by JS -->
+                </div>
+            </div>
+            <div class="budget-card">
+                <h3><i class="fa-solid fa-chart-bar"></i> Spending vs Budget</h3>
+                <div id="budget-comparison">
+                    <!-- Generated by JS -->
+                </div>
+
+                <div class="budget-tip">
+                    <h3><i class="fa-solid fa-lightbulb"></i> Smart Tip</h3>
+                    <p id="budget-tip-text">Follow the <strong>50/30/20 rule</strong>: Allocate 50% of your income to needs, 30% to wants, and 20% to savings. This simple framework helps you build a balanced budget!</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="toast" class="toast-notification">
+        <i class="fa-solid fa-circle-check"></i>
+        <span id="toast-msg">Budget saved!</span>
+    </div>
+
+    <script>
+        var CATEGORIES = [
+            { key: 'Food', label: 'Food & Groceries', icon: 'fa-utensils', colorClass: 'food' },
+            { key: 'Rent', label: 'Rent / Housing', icon: 'fa-house', colorClass: 'rent' },
+            { key: 'Transport', label: 'Transport', icon: 'fa-car', colorClass: 'transport' },
+            { key: 'Shopping', label: 'Shopping', icon: 'fa-bag-shopping', colorClass: 'shopping' },
+            { key: 'Bills', label: 'Bills & Utilities', icon: 'fa-bolt', colorClass: 'bills' },
+            { key: 'Health', label: 'Health & Medical', icon: 'fa-heart-pulse', colorClass: 'health' },
+            { key: 'Education', label: 'Education', icon: 'fa-graduation-cap', colorClass: 'education' },
+            { key: 'Entertainment', label: 'Entertainment', icon: 'fa-film', colorClass: 'entertainment' },
+            { key: 'Other Expense', label: 'Other', icon: 'fa-ellipsis', colorClass: 'other' }
+        ];
+
+        function getBudgets() { try { return JSON.parse(localStorage.getItem('sheFinanceBudgets') || '{}'); } catch(e) { return {}; } }
+        function saveBudgets(b) { localStorage.setItem('sheFinanceBudgets', JSON.stringify(b)); }
+        function getTransactions() { try { return JSON.parse(localStorage.getItem('sheFinanceTransactions') || '[]'); } catch(e) { return []; } }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadUserInfo();
+            var now = new Date();
+            document.getElementById('budget-month').value = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0');
+            buildBudgetInputs();
+            loadBudgetData();
+        });
+
+        function loadUserInfo() {
+            var name = localStorage.getItem('userName') || 'User';
+            var formatted = name.split(' ').map(function(w){return w.charAt(0).toUpperCase()+w.slice(1);}).join(' ');
+            document.getElementById('user-name').innerText = formatted;
+            var avatar = localStorage.getItem('userAvatar');
+            document.getElementById('profile-img').src = avatar || ('https://ui-avatars.com/api/?name=' + encodeURIComponent(formatted) + '&background=c99f55&color=fff');
+        }
+
+        function buildBudgetInputs() {
+            var html = '';
+            CATEGORIES.forEach(function(cat) {
+                html += '<div class="category-budget-item">';
+                html += '<div class="cat-info">';
+                html += '<div class="cat-icon ' + cat.colorClass + '"><i class="fa-solid ' + cat.icon + '"></i></div>';
+                html += '<div class="cat-details"><h4>' + cat.label + '</h4></div>';
+                html += '</div>';
+                html += '<input type="number" class="cat-budget-input" id="budget-' + cat.key + '" placeholder="₹ 0" min="0" oninput="updateComparison(document.getElementById(\'budget-month\').value)">';
+                html += '</div>';
+            });
+            document.getElementById('budget-inputs').innerHTML = html;
+        }
+
+        function loadBudgetData() {
+            var month = document.getElementById('budget-month').value;
+            var budgets = getBudgets();
+            var monthBudget = budgets[month] || {};
+
+            // Fill inputs with saved budgets
+            CATEGORIES.forEach(function(cat) {
+                var input = document.getElementById('budget-' + cat.key);
+                if (monthBudget[cat.key] !== undefined) input.value = monthBudget[cat.key];
+                else input.value = '';
+            });
+
+            updateComparison(month);
+        }
+
+        function updateComparison(month) {
+            var txs = getTransactions().filter(function(tx) {
+                return tx.type === 'expense' && tx.date && tx.date.substring(0,7) === month;
+            });
+
+            // Calculate spent per category
+            var spent = {};
+            txs.forEach(function(tx) {
+                spent[tx.category] = (spent[tx.category] || 0) + tx.amount;
+            });
+
+            var totalBudget = 0, totalSpent = 0;
+            var compHtml = '';
+
+            CATEGORIES.forEach(function(cat) {
+                var input = document.getElementById('budget-' + cat.key);
+                var budgetAmt = parseFloat(input.value) || 0;
+                var spentAmt = spent[cat.key] || 0;
+                totalBudget += budgetAmt;
+                totalSpent += spentAmt;
+
+                var percent = budgetAmt > 0 ? Math.min((spentAmt / budgetAmt) * 100, 100) : 0;
+                var fillClass = percent < 60 ? 'fill-green' : percent < 85 ? 'fill-orange' : 'fill-red';
+
+                compHtml += '<div class="category-budget-item">';
+                compHtml += '<div class="cat-info">';
+                compHtml += '<div class="cat-icon ' + cat.colorClass + '"><i class="fa-solid ' + cat.icon + '"></i></div>';
+                compHtml += '<div class="cat-details"><h4>' + cat.label + '</h4>';
+                compHtml += '<div class="cat-amounts"><span>₹' + spentAmt.toLocaleString('en-IN') + '</span> of ₹' + budgetAmt.toLocaleString('en-IN') + '</div>';
+                compHtml += '</div></div>';
+                compHtml += '<div class="cat-progress">';
+                compHtml += '<div class="cat-progress-bar"><div class="cat-progress-fill ' + fillClass + '" style="width:' + percent + '%"></div></div>';
+                compHtml += '<div class="cat-percent">' + Math.round(percent) + '%</div>';
+                compHtml += '</div></div>';
+            });
+
+            document.getElementById('budget-comparison').innerHTML = compHtml;
+
+            // Overview cards
+            document.getElementById('total-budget').textContent = '₹ ' + totalBudget.toLocaleString('en-IN');
+            document.getElementById('total-spent').textContent = '₹ ' + totalSpent.toLocaleString('en-IN');
+            var remaining = totalBudget - totalSpent;
+            var sign = remaining < 0 ? '- ' : '';
+            document.getElementById('total-remaining').textContent = sign + '₹ ' + Math.abs(remaining).toLocaleString('en-IN');
+            document.getElementById('total-remaining').style.color = remaining >= 0 ? '#2ecc71' : '#e74c3c';
+            if (remaining < 0) document.getElementById('remaining-card').classList.add('over-budget');
+            else document.getElementById('remaining-card').classList.remove('over-budget');
+
+            var overallPercent = totalBudget > 0 ? Math.min((totalSpent / totalBudget) * 100, 100) : 0;
+            document.getElementById('budget-percent').textContent = Math.round(overallPercent) + '%';
+            var bar = document.getElementById('overall-progress');
+            bar.style.width = overallPercent + '%';
+            bar.className = 'budget-progress-fill ' + (overallPercent < 60 ? 'fill-green' : overallPercent < 85 ? 'fill-orange' : 'fill-red');
+
+            // Dynamic tips
+            var tips = [
+                'Follow the <strong>50/30/20 rule</strong>: Allocate 50% to needs, 30% to wants, and 20% to savings.',
+                'Try <strong>envelope budgeting</strong>: Assign a fixed amount to each spending category at the start of the month.',
+                'Review your subscriptions monthly — cancelling unused ones can save you <strong>₹1,000+</strong> per month!',
+                'Set your budget <strong>before</strong> the month begins. Planning ahead prevents overspending.',
+                'If you consistently overspend in a category, increase its budget slightly and reduce another.'
+            ];
+            if (overallPercent > 85) {
+                document.getElementById('budget-tip-text').innerHTML = '⚠️ You\'ve used <strong>' + Math.round(overallPercent) + '%</strong> of your budget! Consider cutting back on non-essential spending for the rest of the month.';
+            } else {
+                document.getElementById('budget-tip-text').innerHTML = tips[Math.floor(Math.random() * tips.length)];
+            }
+        }
+
+        function saveBudget() {
+            var month = document.getElementById('budget-month').value;
+            var budgets = getBudgets();
+            budgets[month] = {};
+            CATEGORIES.forEach(function(cat) {
+                var val = parseFloat(document.getElementById('budget-' + cat.key).value) || 0;
+                budgets[month][cat.key] = val;
+            });
+            saveBudgets(budgets);
+            updateComparison(month);
+            showToast('Budget saved for ' + month + '!');
+        }
+
+        function showToast(msg) {
+            var t = document.getElementById('toast');
+            document.getElementById('toast-msg').innerText = msg;
+            t.style.background = '#2ecc71';
+            t.classList.add('show');
+            setTimeout(function(){ t.classList.remove('show'); }, 3000);
+        }
+        function logout() { localStorage.removeItem('userName'); localStorage.removeItem('userEmail'); localStorage.removeItem('userAvatar'); }
+        window.addEventListener('scroll', function() {
+            var s = document.querySelector('.sidebar');
+            if (s) { s.classList.toggle('scrolled', window.scrollY > 10); }
+        });
+    </script>
+</body>
+</html>

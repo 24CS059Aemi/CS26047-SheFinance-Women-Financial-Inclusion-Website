@@ -25,7 +25,7 @@
         <p style="color: var(--text-light); margin-bottom: 30px; font-size: 0.9rem;">Sign in to continue to your
             dashboard.</p>
 
-        <form class="auth-form" action="dashboard.html" onsubmit="saveLoginName()">
+        <form class="auth-form" id="loginForm" onsubmit="handleEmailLogin(event)">
             <div class="input-group">
                 <label for="email">Email Address</label>
                 <input type="email" id="email" placeholder="Enter your email" required>
@@ -63,49 +63,91 @@
         <!-- Google Auth Script -->
         <script src="https://accounts.google.com/gsi/client" async defer></script>
         <script>
-            function handleCredentialResponse(response) {
-                console.log("Google Token Received:", response.credential);
-
-                // Send the token to our Node.js backend
-                fetch('http://localhost:3000/api/google-login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ credential: response.credential })
-                })
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.success) {
-                            localStorage.setItem('userName', data.user.name);
-                            alert('Login successful! A welcome email has been sent to you.');
-                            window.location.href = 'dashboard.html';
-                        } else {
-                            alert('Login failed!');
-                        }
-                    })
-                    .catch(err => {
-                        console.error("Error communicating with backend:", err);
-                        alert("Make sure the Node.js backend is running!");
-                    });
+            // Decode Google JWT payload
+            function decodeJWT(token) {
+                try {
+                    var base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+                    while (base64.length % 4) base64 += '=';
+                    return JSON.parse(atob(base64));
+                } catch(e) { return null; }
             }
-        </script>
-        <script>
-            function togglePassword(inputId, icon) {
-                const input = document.getElementById(inputId);
-                if (input.type === "password") {
-                    input.type = "text";
-                    icon.classList.remove("fa-eye-slash");
-                    icon.classList.add("fa-eye");
-                } else {
-                    input.type = "password";
-                    icon.classList.remove("fa-eye");
-                    icon.classList.add("fa-eye-slash");
+
+            // Get registered users from localStorage
+            function getUsers() {
+                try { return JSON.parse(localStorage.getItem('registeredUsers') || '[]'); } catch(e) { return []; }
+            }
+
+            // ---- Email / Password Login ----
+            function handleEmailLogin(event) {
+                event.preventDefault();
+                var email    = document.getElementById('email').value.trim().toLowerCase();
+                var password = document.getElementById('password').value;
+
+                var users = getUsers();
+                var user  = users.find(function(u) { return u.email === email; });
+
+                if (!user) {
+                    alert('No account found with this email.\nPlease register first.');
+                    return;
                 }
+                if (user.provider === 'google') {
+                    alert('This account was registered with Google.\nPlease use the "Sign in with Google" button below.');
+                    return;
+                }
+                if (user.password !== password) {
+                    alert('Incorrect password. Please try again.');
+                    return;
+                }
+
+                // Login successful
+                sessionStart(user.name, user.email);
             }
 
-            function saveLoginName() {
-                var email = document.getElementById('email').value;
-                var name = email.split('@')[0]; // Extract name from email
-                localStorage.setItem('userName', name);
+            // ---- Google Login (auto-register + login) ----
+            function handleCredentialResponse(response) {
+                var payload = decodeJWT(response.credential);
+                if (!payload) { alert('Google sign-in failed. Please try again.'); return; }
+
+                var email = payload.email.toLowerCase();
+                var name  = payload.name || email.split('@')[0];
+
+                var users = getUsers();
+                var user  = users.find(function(u) { return u.email === email; });
+
+                if (!user) {
+                    // Auto-register this Google user
+                    users.push({ name: name, email: email, password: null, provider: 'google' });
+                    localStorage.setItem('registeredUsers', JSON.stringify(users));
+                    // Fresh start
+                    localStorage.removeItem('userProfile');
+                    localStorage.removeItem('userAvatar');
+                }
+
+                // Login successful
+                sessionStart(name, email);
+            }
+
+            // ---- Start session and go to dashboard ----
+            function sessionStart(name, email) {
+                var prevEmail = localStorage.getItem('userEmail');
+                if (prevEmail && prevEmail !== email) {
+                    localStorage.removeItem('userProfile');
+                    localStorage.removeItem('userAvatar');
+                }
+                localStorage.setItem('userName',  name);
+                localStorage.setItem('userEmail', email);
+                window.location.href = 'dashboard.html';
+            }
+
+            function togglePassword(inputId, icon) {
+                var input = document.getElementById(inputId);
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.classList.replace('fa-eye-slash', 'fa-eye');
+                } else {
+                    input.type = 'password';
+                    icon.classList.replace('fa-eye', 'fa-eye-slash');
+                }
             }
         </script>
 </body>

@@ -1,31 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - SheFinance</title>
     <link rel="stylesheet" href="style.css">
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
+
 <body class="dashboard-body">
 
     <!-- Sidebar -->
     <aside class="sidebar">
         <div class="sidebar-logo">
-            <a href="index.html"><h2>She<span>Finance</span></h2></a>
+            <a href="index.html">
+                <h2>She<span>Finance</span></h2>
+            </a>
         </div>
         <ul class="sidebar-menu">
-            <li class="active"><a href="#"><i class="fa-solid fa-house"></i> Overview</a></li>
-            <li><a href="#"><i class="fa-solid fa-wallet"></i> Budget Planner</a></li>
-            <li><a href="#"><i class="fa-solid fa-bullseye"></i> Savings Goals</a></li>
-            <li><a href="#"><i class="fa-solid fa-robot"></i> AI Chatbot</a></li>
-            <li><a href="#"><i class="fa-solid fa-building-columns"></i> Govt Schemes</a></li>
-            <li><a href="#"><i class="fa-solid fa-book-open-reader"></i> Education Hub</a></li>
+            <li class="active"><a href="dashboard.html"><i class="fa-solid fa-house"></i> Overview</a></li>
+            <li><a href="tracker.html"><i class="fa-solid fa-money-bill-transfer"></i> Income & Expense</a></li>
+            <li><a href="budget.html"><i class="fa-solid fa-wallet"></i> Budget Planner</a></li>
+            <li><a href="savings.html"><i class="fa-solid fa-bullseye"></i> Savings Goals</a></li>
+            <li><a href="chatbot.html"><i class="fa-solid fa-robot"></i> AI Chatbot</a></li>
+            <li><a href="schemes.html"><i class="fa-solid fa-building-columns"></i> Govt Schemes</a></li>
+            <li><a href="education.html"><i class="fa-solid fa-book-open-reader"></i> Education Hub</a></li>
+            <li><a href="reports.html"><i class="fa-solid fa-chart-pie"></i> Reports</a></li>
         </ul>
         <div class="sidebar-bottom">
-            <a href="index.html" class="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+            <a href="index.html" class="logout-btn" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i>
+                Logout</a>
         </div>
     </aside>
 
@@ -38,9 +47,13 @@
                 <p>Here is your financial summary for this month.</p>
             </div>
             <div class="header-profile">
-                <div class="profile-pic">
-                    <img id="profile-img" src="https://ui-avatars.com/api/?name=User&background=c99f55&color=fff" alt="Profile">
-                </div>
+                <a href="profile.html" title="Manage Profile">
+                    <div class="profile-pic">
+                        <img id="profile-img" src="https://ui-avatars.com/api/?name=User&background=c99f55&color=fff"
+                            alt="Profile">
+                    </div>
+                </a>
+                <span id="user-name" class="user-name"></span>
             </div>
         </header>
 
@@ -51,50 +64,37 @@
                 <div class="card balance-card">
                     <div class="card-icon"><i class="fa-solid fa-wallet"></i></div>
                     <h3>Total Balance</h3>
-                    <h2>₹ 45,200</h2>
-                    <p class="positive"><i class="fa-solid fa-arrow-trend-up"></i> +12% from last month</p>
+                    <h2 id="db-total-balance">₹ 0</h2>
+                    <p class="positive" id="db-balance-trend"><i class="fa-solid fa-arrow-trend-up"></i> Net Savings</p>
                 </div>
                 <div class="card expense-card">
                     <div class="card-icon"><i class="fa-solid fa-chart-line"></i></div>
                     <h3>Monthly Expenses</h3>
-                    <h2>₹ 12,500</h2>
-                    <p class="positive"><i class="fa-solid fa-arrow-trend-down"></i> -5% from last month (Good!)</p>
+                    <h2 id="db-monthly-expenses">₹ 0</h2>
+                    <p class="negative" id="db-expense-trend">This month</p>
                 </div>
                 <div class="card health-card">
                     <div class="card-icon"><i class="fa-solid fa-heart-pulse"></i></div>
                     <h3>Financial Health</h3>
-                    <h2>85 / 100</h2>
-                    <p class="positive">Excellent! Keep saving.</p>
+                    <h2 id="db-health-score">0 / 100</h2>
+                    <p class="positive" id="db-health-status">Add transactions to calculate</p>
                 </div>
             </div>
-            
+
             <!-- Bottom Widgets -->
             <div class="dashboard-widgets">
                 <!-- Recent Transactions -->
                 <div class="widget">
                     <h3>Recent Transactions</h3>
-                    <ul class="transaction-list">
-                        <li>
-                            <div class="tx-info"><div class="tx-icon"><i class="fa-solid fa-cart-shopping"></i></div> Groceries</div>
-                            <div class="tx-amount negative">- ₹ 2,500</div>
-                        </li>
-                        <li>
-                            <div class="tx-info"><div class="tx-icon"><i class="fa-solid fa-bolt"></i></div> Electricity Bill</div>
-                            <div class="tx-amount negative">- ₹ 1,200</div>
-                        </li>
-                        <li>
-                            <div class="tx-info"><div class="tx-icon"><i class="fa-solid fa-briefcase"></i></div> Salary</div>
-                            <div class="tx-amount positive">+ ₹ 35,000</div>
-                        </li>
+                    <ul class="transaction-list" id="db-transaction-list">
+                        <!-- Populated dynamically -->
                     </ul>
                 </div>
                 <!-- AI Prediction -->
                 <div class="widget ai-widget">
                     <h3><i class="fa-solid fa-wand-magic-sparkles"></i> AI Savings Prediction</h3>
-                    <div class="ai-box">
-                        <p>Based on your current spending habits, you are on track to save <strong>₹ 15,000</strong> this month! ✨</p>
-                        <p><em>Suggestion: Consider investing 10% of this into a Mutual Fund for long-term growth.</em></p>
-                        <a href="#" class="btn btn-primary" style="margin-top: 15px;">Ask AI Chatbot</a>
+                    <div class="ai-box" id="db-ai-box">
+                        <!-- Populated dynamically -->
                     </div>
                 </div>
             </div>
@@ -102,20 +102,206 @@
     </main>
 
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            var userName = localStorage.getItem('userName');
-            
+        document.addEventListener("DOMContentLoaded", function () {
+            var storedName = localStorage.getItem('userName');
+            // Fallback to formatted email name if not set
+            var userName = storedName || (function () {
+                var email = localStorage.getItem('userEmail') || '';
+                var raw = email.split('@')[0].replace(/[._]/g, ' ');
+                return raw.charAt(0).toUpperCase() + raw.slice(1);
+            })();
             if (userName) {
-                // Capitalize first letter of the name
-                var formattedName = userName.charAt(0).toUpperCase() + userName.slice(1);
-                
+                // Capitalize each word for nice display
+                var formattedName = userName.split(' ').map(function (w) { return w.charAt(0).toUpperCase() + w.slice(1); }).join(' ');
                 // Set the Welcome text
                 document.getElementById('welcome-msg').innerText = "Welcome back, " + formattedName + "! 👋";
-                
-                // Set the Profile Image with their initials
-                document.getElementById('profile-img').src = "https://ui-avatars.com/api/?name=" + encodeURIComponent(formattedName) + "&background=c99f55&color=fff";
+                // Set the user name next to avatar
+                var nameSpan = document.getElementById('user-name');
+                if (nameSpan) { nameSpan.innerText = formattedName; }
+                // Set the Profile Image with custom upload or fallback to initials
+                var savedAvatar = localStorage.getItem('userAvatar');
+                if (savedAvatar) {
+                    document.getElementById('profile-img').src = savedAvatar;
+                } else {
+                    document.getElementById('profile-img').src = "https://ui-avatars.com/api/?name=" + encodeURIComponent(formattedName) + "&background=c99f55&color=fff";
+                }
+            }
+
+            // Load live dashboard metrics
+            loadDashboardData();
+        });
+
+        function getTransactions() { try { return JSON.parse(localStorage.getItem('sheFinanceTransactions') || '[]'); } catch (e) { return []; } }
+        function getBudgets() { try { return JSON.parse(localStorage.getItem('sheFinanceBudgets') || '{}'); } catch (e) { return {}; } }
+
+        function loadDashboardData() {
+            var txs = getTransactions();
+            var now = new Date();
+            var currentMonthStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+
+            // 1. Calculate Balances
+            var totalBalance = 0;
+            var totalExpenseMonth = 0;
+            var totalIncomeMonth = 0;
+
+            txs.forEach(function (tx) {
+                if (tx.type === 'income') {
+                    totalBalance += tx.amount;
+                } else {
+                    totalBalance -= tx.amount;
+                }
+
+                // Month filter
+                if (tx.date && tx.date.substring(0, 7) === currentMonthStr) {
+                    if (tx.type === 'expense') {
+                        totalExpenseMonth += tx.amount;
+                    } else if (tx.type === 'income') {
+                        totalIncomeMonth += tx.amount;
+                    }
+                }
+            });
+
+            // Update UI Balance Cards
+            document.getElementById('db-total-balance').textContent = '₹ ' + totalBalance.toLocaleString('en-IN');
+            document.getElementById('db-monthly-expenses').textContent = '₹ ' + totalExpenseMonth.toLocaleString('en-IN');
+
+            // Set balance card text based on surplus
+            var balanceTrend = document.getElementById('db-balance-trend');
+            if (totalBalance >= 0) {
+                balanceTrend.className = "positive";
+                balanceTrend.innerHTML = '<i class="fa-solid fa-arrow-trend-up"></i> Net Savings';
+            } else {
+                balanceTrend.className = "negative";
+                balanceTrend.innerHTML = '<i class="fa-solid fa-arrow-trend-down"></i> Overdrawn!';
+            }
+
+            // 2. Financial Health Score calculation
+            var score = 50; // Base score
+            if (totalIncomeMonth > 0) {
+                var savingsRate = ((totalIncomeMonth - totalExpenseMonth) / totalIncomeMonth) * 100;
+                if (savingsRate > 20) score += 30;
+                else if (savingsRate > 10) score += 15;
+                else if (savingsRate < 0) score -= 20;
+            } else if (totalExpenseMonth > 0) {
+                score -= 30;
+            }
+
+            // Budget adherence
+            var budgets = getBudgets()[currentMonthStr] || {};
+            var totalBudget = Object.values(budgets).reduce((a, b) => a + b, 0);
+            if (totalBudget > 0) {
+                var budgetUsage = (totalExpenseMonth / totalBudget) * 100;
+                if (budgetUsage <= 90) score += 20;
+                else if (budgetUsage > 100) score -= 15;
+            }
+
+            score = Math.max(10, Math.min(100, Math.round(score)));
+            if (totalIncomeMonth === 0 && totalExpenseMonth === 0) {
+                score = 0;
+            }
+
+            // Update Health Score UI
+            var scoreEl = document.getElementById('db-health-score');
+            var statusEl = document.getElementById('db-health-status');
+            scoreEl.innerText = score === 0 ? "N/A" : score + " / 100";
+            if (score === 0) {
+                statusEl.innerText = "No transactions this month";
+                statusEl.style.color = "var(--text-light)";
+            } else if (score >= 80) {
+                statusEl.innerText = "Excellent! Keep saving.";
+                statusEl.style.color = "#2ecc71";
+            } else if (score >= 50) {
+                statusEl.innerText = "Fair. Try reducing wants.";
+                statusEl.style.color = "#f39c12";
+            } else {
+                statusEl.innerText = "Critical. Check budget!";
+                statusEl.style.color = "#e74c3c";
+            }
+
+            // 3. Render 3 Recent Transactions
+            var txListEl = document.getElementById('db-transaction-list');
+            if (txs.length === 0) {
+                txListEl.innerHTML = '<li style="text-align:center;color:var(--text-light);padding:20px 0;">No transactions recorded yet.</li>';
+            } else {
+                // Sort by date desc
+                var sortedTxs = [...txs].sort((a, b) => new Date(b.date) - new Date(a.date));
+                var recent = sortedTxs.slice(0, 3);
+                var txHtml = '';
+
+                var categoryIcons = {
+                    'Salary': 'fa-briefcase',
+                    'Freelance': 'fa-briefcase',
+                    'Business': 'fa-briefcase',
+                    'Investment': 'fa-arrow-trend-up',
+                    'Food': 'fa-cart-shopping',
+                    'Rent': 'fa-house',
+                    'Transport': 'fa-car',
+                    'Shopping': 'fa-bag-shopping',
+                    'Bills': 'fa-bolt',
+                    'Health': 'fa-heart-pulse',
+                    'Education': 'fa-graduation-cap',
+                    'Entertainment': 'fa-film',
+                    'Other Income': 'fa-wallet',
+                    'Other Expense': 'fa-ellipsis'
+                };
+
+                recent.forEach(function (tx) {
+                    var icon = categoryIcons[tx.category] || 'fa-receipt';
+                    var txClass = tx.type === 'income' ? 'positive' : 'negative';
+                    var sign = tx.type === 'income' ? '+' : '-';
+                    txHtml += '<li>';
+                    txHtml += '<div class="tx-info"><div class="tx-icon"><i class="fa-solid ' + icon + '"></i></div> ' + tx.description + '</div>';
+                    txHtml += '<div class="tx-amount ' + txClass + '">' + sign + ' ₹ ' + tx.amount.toLocaleString('en-IN') + '</div>';
+                    txHtml += '</li>';
+                });
+                txListEl.innerHTML = txHtml;
+            }
+
+            // 4. Dynamic AI Savings Recommendation
+            var aiBoxEl = document.getElementById('db-ai-box');
+            var currentSavings = totalIncomeMonth - totalExpenseMonth;
+
+            if (totalIncomeMonth === 0 && totalExpenseMonth === 0) {
+                aiBoxEl.innerHTML = `
+                    <p>Start logging your income and expenses to unlock live AI budgeting tips and financial scores! ✨</p>
+                    <a href="tracker.html" class="btn btn-primary" style="margin-top: 15px;">Log Transaction</a>
+                `;
+            } else if (currentSavings <= 0) {
+                aiBoxEl.innerHTML = `
+                    <p>🚨 Your monthly spending exceeds your income! You have spent <strong>₹${Math.abs(currentSavings).toLocaleString('en-IN')}</strong> more than you earned.</p>
+                    <p><em>AI Tip: Go to the Budget Planner and set strict limits on luxury wants (like Shopping or Dining out).</em></p>
+                    <a href="budget.html" class="btn btn-primary" style="margin-top: 15px;">Plan Budget</a>
+                `;
+            } else {
+                var savingsPercent = Math.round((currentSavings / totalIncomeMonth) * 100);
+                aiBoxEl.innerHTML = `
+                    <p>Based on your current spending, you are saving <strong>₹${currentSavings.toLocaleString('en-IN')}</strong> (${savingsPercent}%) of your income this month! ✨</p>
+                    <p><em>AI Tip: Excellent surplus! Consider locking ₹${Math.round(currentSavings * 0.4).toLocaleString('en-IN')} into a Savings Goal or Recurring Deposit.</em></p>
+                    <a href="savings.html" class="btn btn-primary" style="margin-top: 15px;">Set Savings Goal</a>
+                `;
+            }
+        }
+
+        function logout() {
+            // Only clear auth session — financial data stays safe!
+            localStorage.removeItem('userName');
+            localStorage.removeItem('userEmail');
+            localStorage.removeItem('userAvatar');
+            localStorage.removeItem('userProfile');
+        }
+
+        // Sticky navbar scroll effect
+        window.addEventListener('scroll', function () {
+            var sidebar = document.querySelector('.sidebar');
+            if (sidebar) {
+                if (window.scrollY > 10) {
+                    sidebar.classList.add('scrolled');
+                } else {
+                    sidebar.classList.remove('scrolled');
+                }
             }
         });
     </script>
 </body>
+
 </html>

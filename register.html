@@ -18,7 +18,7 @@
         <h3 style="margin-bottom: 20px;">Create an Account</h3>
         <p style="color: var(--text-light); margin-bottom: 30px; font-size: 0.9rem;">Start your journey to financial freedom.</p>
 
-        <form class="auth-form grid-form" id="registerForm" action="onboarding.html">
+        <form class="auth-form grid-form" id="registerForm">
             <div class="input-group">
                 <label for="fullname">Full Name</label>
                 <input type="text" id="fullname" placeholder="Enter full name" required>
@@ -82,44 +82,84 @@
     <!-- Google Auth Script -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script>
+        // Decode Google JWT payload (no backend needed)
+        function decodeJWT(token) {
+            try {
+                var base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+                while (base64.length % 4) base64 += '=';
+                return JSON.parse(atob(base64));
+            } catch(e) { return null; }
+        }
+
         function handleCredentialResponse(response) {
-            console.log("Google Token Received:", response.credential);
-            
-            // Send the token to our Node.js backend
-            fetch('http://localhost:3000/api/google-login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ credential: response.credential })
-            })
-            .then(res => res.json())
-            .then(data => {
-                if(data.success) {
-                    localStorage.setItem('userName', data.user.name);
-                    alert('Registration successful! A welcome email has been sent to you.');
-                    window.location.href = 'onboarding.html';
-                } else {
-                    alert('Registration failed!');
-                }
-            })
-            .catch(err => {
-                console.error("Error communicating with backend:", err);
-                alert("Make sure the Node.js backend is running!");
-            });
+            var payload = decodeJWT(response.credential);
+            if (!payload) { alert('Google sign-up failed. Please try again.'); return; }
+
+            var email = payload.email.toLowerCase();
+            var name  = payload.name || email.split('@')[0];
+
+            // Load existing users
+            var users = [];
+            try { users = JSON.parse(localStorage.getItem('registeredUsers') || '[]'); } catch(e) {}
+
+            // Check already registered
+            var exists = users.find(function(u) { return u.email === email; });
+            if (exists) {
+                alert('This Google account is already registered. Please sign in instead.');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Register the Google user
+            users.push({ name: name, email: email, password: null, provider: 'google' });
+            localStorage.setItem('registeredUsers', JSON.stringify(users));
+
+            // Start fresh session
+            localStorage.removeItem('userProfile');
+            localStorage.removeItem('userAvatar');
+            localStorage.setItem('userName',  name);
+            localStorage.setItem('userEmail', email);
+
+            alert('Registration successful via Google! Welcome to SheFinance.');
+            window.location.href = 'onboarding.html';
         }
     </script>
     <script>
         document.getElementById('registerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            var fullname = document.getElementById('fullname').value.trim();
+            var email    = document.getElementById('email').value.trim().toLowerCase();
             var password = document.getElementById('password').value;
             var confirmPassword = document.getElementById('confirm_password').value;
-            
+
             if (password !== confirmPassword) {
-                e.preventDefault(); // Prevent form from submitting
                 alert("Passwords do not match! Please try again.");
-            } else {
-                var fullname = document.getElementById('fullname').value;
-                localStorage.setItem('userName', fullname);
-                alert("Account created successfully! Let's get started.");
+                return;
             }
+
+            // Load existing registered users
+            var users = [];
+            try { users = JSON.parse(localStorage.getItem('registeredUsers') || '[]'); } catch(e) {}
+
+            // Check if email already registered
+            var exists = users.find(function(u) { return u.email === email; });
+            if (exists) {
+                alert("This email is already registered. Please sign in instead.");
+                return;
+            }
+
+            // Add new user
+            users.push({ name: fullname, email: email, password: password, provider: 'email' });
+            localStorage.setItem('registeredUsers', JSON.stringify(users));
+
+            // Clear old profile/avatar for fresh start
+            localStorage.removeItem('userProfile');
+            localStorage.removeItem('userAvatar');
+            localStorage.setItem('userName',  fullname);
+            localStorage.setItem('userEmail', email);
+
+            alert("Account created successfully! Let's get started.");
+            window.location.href = 'onboarding.html';
         });
 
         function togglePassword(inputId, icon) {

@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Savings Goals - SheFinance</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .savings-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 30px; margin-top: 20px; align-items: start; }
+        .savings-card { background: #fff; border-radius: 15px; padding: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .savings-card h3 { font-size: 1.3rem; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #eee; padding-bottom: 12px; }
+        .savings-card h3 i { color: var(--secondary-color); }
+        
+        /* Overview Cards */
+        .savings-overview { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px; }
+        .savings-overview .card h2 { font-size: 1.6rem; }
+        .savings-overview .card.ai-card { background: linear-gradient(135deg, var(--primary-color), #2a5266); color: #fff; }
+        .savings-overview .card.ai-card h3, .savings-overview .card.ai-card h2 { color: #fff; }
+        .savings-overview .card.ai-card .ai-label { font-size: 0.8rem; background: rgba(201, 159, 85, 0.25); color: var(--secondary-color); padding: 4px 8px; border-radius: 20px; font-weight: 600; position: absolute; top: 15px; right: 15px; }
+
+        /* Form styling */
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display: block; font-size: 0.9rem; font-weight: 500; margin-bottom: 8px; color: var(--text-dark); }
+        .form-group input, .form-group select { width: 100%; padding: 10px 15px; border: 1px solid #ddd; border-radius: 8px; font-family: 'Outfit', sans-serif; font-size: 0.95rem; outline: none; }
+        .form-group input:focus, .form-group select:focus { border-color: var(--secondary-color); }
+        .btn-submit-goal { width: 100%; padding: 12px; background: var(--secondary-color); color: #fff; border: none; border-radius: 8px; font-family: 'Outfit', sans-serif; font-weight: 600; cursor: pointer; transition: all 0.3s ease; }
+        .btn-submit-goal:hover { background: var(--secondary-hover); }
+
+        /* Goal list items */
+        .goal-list { display: grid; grid-template-columns: 1fr; gap: 20px; }
+        .goal-item { background: #fff; border-radius: 15px; padding: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); border-left: 5px solid var(--secondary-color); transition: transform 0.3s ease; position: relative; }
+        .goal-item:hover { transform: translateY(-3px); }
+        .goal-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px; }
+        .goal-title-wrapper { display: flex; align-items: center; gap: 15px; }
+        .goal-icon { width: 45px; height: 45px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; background: rgba(201, 159, 85, 0.1); color: var(--secondary-color); }
+        .goal-title h4 { font-family: 'Outfit', sans-serif; font-size: 1.15rem; font-weight: 600; color: var(--primary-color); margin-bottom: 2px; }
+        .goal-title span { font-size: 0.8rem; color: var(--text-light); }
+        .goal-target-val { text-align: right; }
+        .goal-target-val h4 { font-size: 1.2rem; color: var(--primary-color); font-weight: 600; }
+        .goal-target-val span { font-size: 0.8rem; color: var(--text-light); }
+
+        .goal-progress-section { margin-bottom: 20px; }
+        .goal-progress-meta { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 5px; color: var(--text-light); }
+        .goal-progress-meta strong { color: var(--primary-color); }
+        .goal-bar-bg { width: 100%; height: 8px; background: #eee; border-radius: 10px; overflow: hidden; }
+        .goal-bar-fill { height: 100%; background: linear-gradient(90deg, var(--secondary-color), var(--secondary-hover)); border-radius: 10px; transition: width 0.6s ease; }
+
+        .goal-actions { display: flex; gap: 10px; justify-content: flex-end; border-top: 1px solid #f5f5f5; padding-top: 15px; }
+        .btn-action { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; border: none; cursor: pointer; transition: all 0.3s ease; }
+        .btn-add-val { background: rgba(46, 204, 113, 0.1); color: #2ecc71; }
+        .btn-add-val:hover { background: #2ecc71; color: #fff; }
+        .btn-sub-val { background: rgba(230, 126, 34, 0.1); color: #e67e22; }
+        .btn-sub-val:hover { background: #e67e22; color: #fff; }
+        .btn-predict-val { background: rgba(27, 54, 68, 0.1); color: var(--primary-color); }
+        .btn-predict-val:hover { background: var(--primary-color); color: #fff; }
+        .btn-delete-goal { background: rgba(231, 76, 60, 0.1); color: #e74c3c; padding: 8px 10px; }
+        .btn-delete-goal:hover { background: #e74c3c; color: #fff; }
+
+        /* ML Panel & Simulation styling */
+        .prediction-summary-box { background: linear-gradient(135deg, #fdfbf7, #f7efe1); border: 1px solid rgba(201,159,85,0.2); border-radius: 12px; padding: 20px; margin-top: 25px; }
+        .prediction-summary-box h4 { font-family: 'Outfit', sans-serif; font-size: 1.05rem; font-weight: 600; color: var(--primary-color); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .prediction-summary-box p { font-size: 0.9rem; color: var(--text-light); line-height: 1.6; }
+        .prediction-summary-box strong { color: var(--primary-color); }
+
+        /* Detail Modal */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
+        .modal-content { background: #fff; border-radius: 20px; padding: 30px; width: 90%; max-width: 550px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); transform: translateY(-30px); transition: transform 0.3s ease; }
+        .modal-overlay.active .modal-content { transform: translateY(0); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .modal-header h3 { font-size: 1.4rem; color: var(--primary-color); }
+        .modal-close { font-size: 1.3rem; color: var(--text-light); cursor: pointer; transition: color 0.2s; }
+        .modal-close:hover { color: #e74c3c; }
+
+        .simulation-detail { display: flex; flex-direction: column; gap: 15px; }
+        .sim-metric { display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding-bottom: 8px; font-size: 0.95rem; }
+        .sim-metric span { color: var(--text-light); }
+        .sim-metric strong { color: var(--primary-color); font-weight: 600; }
+        .sim-recommendation { background: rgba(201, 159, 85, 0.1); border-left: 4px solid var(--secondary-color); padding: 15px; border-radius: 0 8px 8px 0; margin-top: 10px; font-size: 0.9rem; line-height: 1.6; }
+
+        /* Toast styling */
+        .toast-notification { position: fixed; bottom: 30px; right: 30px; background: #2ecc71; color: #fff; padding: 12px 25px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 10px; z-index: 100000; transform: translateY(100px); opacity: 0; transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); }
+        .toast-notification.show { transform: translateY(0); opacity: 1; }
+
+        @media (max-width: 992px) {
+            .savings-grid { grid-template-columns: 1fr; }
+            .savings-overview { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 576px) {
+            .savings-overview { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body class="dashboard-body">
+
+    <!-- Top Navbar Navigation -->
+    <aside class="sidebar">
+        <div class="sidebar-logo"><a href="index.html"><h2>She<span>Finance</span></h2></a></div>
+        <ul class="sidebar-menu">
+            <li><a href="dashboard.html"><i class="fa-solid fa-house"></i> Overview</a></li>
+            <li><a href="tracker.html"><i class="fa-solid fa-money-bill-transfer"></i> Income & Expense</a></li>
+            <li><a href="budget.html"><i class="fa-solid fa-wallet"></i> Budget Planner</a></li>
+            <li class="active"><a href="savings.html"><i class="fa-solid fa-bullseye"></i> Savings Goals</a></li>
+            <li><a href="chatbot.html"><i class="fa-solid fa-robot"></i> AI Chatbot</a></li>
+            <li><a href="schemes.html"><i class="fa-solid fa-building-columns"></i> Govt Schemes</a></li>
+            <li><a href="education.html"><i class="fa-solid fa-book-open-reader"></i> Education Hub</a></li>
+            <li><a href="reports.html"><i class="fa-solid fa-chart-pie"></i> Reports</a></li>
+        </ul>
+        <div class="sidebar-bottom">
+            <a href="index.html" class="logout-btn" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="dashboard-main">
+        <header class="dashboard-header">
+            <div class="header-title">
+                <h2>Savings Goals &amp; AI Predictor</h2>
+                <p>Plan your dreams, set targets, and let our AI calculate your path to success.</p>
+            </div>
+            <div class="header-profile">
+                <a href="profile.html"><div class="profile-pic"><img id="profile-img" src="https://ui-avatars.com/api/?name=User&background=c99f55&color=fff" alt="Profile"></div></a>
+                <span id="user-name" class="user-name"></span>
+            </div>
+        </header>
+
+        <!-- Overview Cards -->
+        <div class="savings-overview">
+            <div class="card">
+                <div class="card-icon"><i class="fa-solid fa-bullseye"></i></div>
+                <h3>Total Target</h3>
+                <h2 id="total-target">₹ 0</h2>
+            </div>
+            <div class="card">
+                <div class="card-icon"><i class="fa-solid fa-piggy-bank"></i></div>
+                <h3>Total Saved</h3>
+                <h2 id="total-saved" style="color: #2ecc71;">₹ 0</h2>
+            </div>
+            <div class="card">
+                <div class="card-icon"><i class="fa-solid fa-hourglass-half"></i></div>
+                <h3>Remaining Target</h3>
+                <h2 id="total-remaining">₹ 0</h2>
+            </div>
+            <div class="card ai-card">
+                <span class="ai-label"><i class="fa-solid fa-brain"></i> AI MODEL</span>
+                <h3>AI Health Score</h3>
+                <h2 id="ai-health-score">--</h2>
+            </div>
+        </div>
+
+        <!-- Savings Core Grid -->
+        <div class="savings-grid">
+            
+            <!-- Left Side: Create / Edit Goal Form -->
+            <div class="savings-card">
+                <h3><i class="fa-solid fa-plus-circle"></i> Create New Goal</h3>
+                <form id="goal-form" onsubmit="saveNewGoal(event)">
+                    <div class="form-group">
+                        <label>Goal Name</label>
+                        <input type="text" id="goal-name" placeholder="e.g., Start Boutique Shop" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Goal Category</label>
+                        <select id="goal-category">
+                            <option value="business">Business / Career</option>
+                            <option value="emergency">Emergency Fund</option>
+                            <option value="education">Education / Self-Growth</option>
+                            <option value="gold">Gold &amp; Jewellery</option>
+                            <option value="property">Home / Property</option>
+                            <option value="other">Other Needs</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Target Amount (₹)</label>
+                        <input type="number" id="goal-target" placeholder="e.g., 50000" min="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Initial Saved Amount (₹)</label>
+                        <input type="number" id="goal-initial" placeholder="e.g., 5000" min="0" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Target Date</label>
+                        <input type="date" id="goal-date" required>
+                    </div>
+                    <button type="submit" class="btn-submit-goal">Set Goal</button>
+                </form>
+
+                <!-- Peer Comparison ML Panel -->
+                <div class="prediction-summary-box" id="ai-peer-panel">
+                    <h4><i class="fa-solid fa-users-viewfinder"></i> Peer Analysis (ML Prediction)</h4>
+                    <p id="ai-peer-text">Loading peer-based model comparisons...</p>
+                </div>
+            </div>
+
+            <!-- Right Side: Active Goals Grid -->
+            <div class="goal-list-container">
+                <h3 style="font-family:'Playfair Display', serif; color:var(--primary-color); margin-bottom: 20px; font-size:1.4rem;">
+                    <i class="fa-solid fa-list-check" style="color:var(--secondary-color);"></i> Active Goals
+                </h3>
+                <div class="goal-list" id="active-goals-list">
+                    <!-- Dynamic rendering of goals -->
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Modal for Detailed AI Prediction Simulation -->
+    <div class="modal-overlay" id="prediction-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-goal-title">AI Savings Forecast</h3>
+                <span class="modal-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></span>
+            </div>
+            <div class="simulation-detail">
+                <div class="sim-metric">
+                    <span>Goal Name:</span>
+                    <strong id="sim-name">--</strong>
+                </div>
+                <div class="sim-metric">
+                    <span>Target Amount:</span>
+                    <strong id="sim-target">₹ 0</strong>
+                </div>
+                <div class="sim-metric">
+                    <span>Current Saved:</span>
+                    <strong id="sim-saved">₹ 0</strong>
+                </div>
+                <div class="sim-metric">
+                    <span>Your Avg. Monthly Savings:</span>
+                    <strong id="sim-monthly-rate" style="color:#2ecc71;">₹ 0</strong>
+                </div>
+                <div class="sim-metric">
+                    <span>Planned Target Date:</span>
+                    <strong id="sim-planned-date">--</strong>
+                </div>
+                <div class="sim-metric">
+                    <span>AI Predicted Finish Date:</span>
+                    <strong id="sim-predicted-date" style="color:var(--secondary-color);">--</strong>
+                </div>
+                <div class="sim-metric">
+                    <span>Status:</span>
+                    <strong id="sim-status">--</strong>
+                </div>
+                <div class="sim-recommendation">
+                    <strong>💡 AI Smart Recommendation:</strong>
+                    <p id="sim-recommendation-text">Analyzing your financial trends...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast-notification">
+        <i class="fa-solid fa-circle-check" id="toast-icon"></i>
+        <span id="toast-msg">Success!</span>
+    </div>
+
+    <script>
+        // Define category icons & labels
+        const CATEGORIES = {
+            business: { icon: 'fa-briefcase', label: 'Business / Career' },
+            emergency: { icon: 'fa-shield-heart', label: 'Emergency Fund' },
+            education: { icon: 'fa-graduation-cap', label: 'Education Hub' },
+            gold: { icon: 'fa-coins', label: 'Gold & Jewellery' },
+            property: { icon: 'fa-house-chimney', label: 'Home / Property' },
+            other: { icon: 'fa-star', label: 'Other Needs' }
+        };
+
+        let goals = [];
+        let peerData = [];
+        let userProfile = null;
+        let monthlySavingsRate = 0;
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Load Profile Name & avatar
+            const storedName = localStorage.getItem('userName') || 'Archi Patel';
+            document.getElementById('user-name').textContent = storedName;
+            
+            const storedAvatar = localStorage.getItem('userAvatar');
+            if (storedAvatar) {
+                document.getElementById('profile-img').src = storedAvatar;
+            } else {
+                document.getElementById('profile-img').src = "https://ui-avatars.com/api/?name=" + encodeURIComponent(storedName) + "&background=c99f55&color=fff";
+            }
+
+            userProfile = JSON.parse(localStorage.getItem('userProfile')) || {
+                fullName: storedName,
+                age: 30,
+                occupation: 'salaried',
+                incomeRange: '30k_60k'
+            };
+
+            // Set minimum target date to today
+            const todayStr = new Date().toISOString().split('T')[0];
+            document.getElementById('goal-date').min = todayStr;
+
+            // Load goals and calculate actual monthly savings rate from transactions
+            loadGoalsFromStorage();
+            calculateUserMonthlySavings();
+            
+            // Load ML Peer Dataset
+            await loadCSVPeerData();
+            
+            // Run ML prediction
+            runMLPeerMatching();
+
+            // Render UI
+            renderGoals();
+        });
+
+        // 1. Calculate user's monthly savings rate AND health score (same formula as dashboard/reports)
+        function calculateUserMonthlySavings() {
+            const txs = JSON.parse(localStorage.getItem('sheFinanceTransactions')) || [];
+            let totalIncome = 0;
+            let totalExpense = 0;
+            
+            const now = new Date();
+            const currentMonthStr = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0');
+
+            txs.forEach(tx => {
+                if (tx.date && tx.date.substring(0,7) === currentMonthStr) {
+                    if (tx.type === 'income') totalIncome += tx.amount;
+                    else totalExpense += tx.amount;
+                }
+            });
+
+            if (totalIncome > 0) {
+                monthlySavingsRate = totalIncome - totalExpense;
+            } else {
+                const incomeMap = { below_10k: 5000, '10k_30k': 20000, '30k_60k': 45000, above_60k: 90000 };
+                const estIncome = incomeMap[userProfile?.incomeRange] || 25000;
+                monthlySavingsRate = estIncome * 0.25;
+            }
+
+            // --- Health Score: SAME formula as dashboard.html & reports.html ---
+            let score = 50; // Base
+            if (totalIncome > 0) {
+                const savingsRate = ((totalIncome - totalExpense) / totalIncome) * 100;
+                if (savingsRate > 20) score += 30;
+                else if (savingsRate > 10) score += 15;
+                else if (savingsRate < 0) score -= 20;
+            } else if (totalExpense > 0) {
+                score -= 30;
+            }
+
+            // Budget adherence bonus
+            try {
+                const budgets = JSON.parse(localStorage.getItem('sheFinanceBudgets') || '{}');
+                const monthBudget = budgets[currentMonthStr] || {};
+                const totalBudget = Object.values(monthBudget).reduce((a,b) => a+b, 0);
+                if (totalBudget > 0) {
+                    const usage = (totalExpense / totalBudget) * 100;
+                    if (usage <= 90) score += 20;
+                    else if (usage > 100) score -= 15;
+                }
+            } catch(e) {}
+
+            score = Math.max(10, Math.min(100, Math.round(score)));
+            if (totalIncome === 0 && totalExpense === 0) score = 0;
+
+            // Update AI Health Score card
+            const scoreEl = document.getElementById('ai-health-score');
+            if (scoreEl) {
+                scoreEl.textContent = score === 0 ? 'N/A' : score + '%';
+                // Color the score card based on score
+                const aiCard = scoreEl.closest('.ai-card');
+                if (aiCard && score > 0) {
+                    if (score >= 80) aiCard.style.background = 'linear-gradient(135deg, #1b6b3a, #2ecc71)';
+                    else if (score >= 50) aiCard.style.background = 'linear-gradient(135deg, #7d5a00, #f39c12)';
+                    else aiCard.style.background = 'linear-gradient(135deg, #7d1e1e, #e74c3c)';
+                }
+            }
+        }
+
+        // 2. Load ML peer dataset from CSV file
+        async function loadCSVPeerData() {
+            try {
+                const response = await fetch('mock_savings_data.csv');
+                const data = await response.text();
+                const rows = data.split('\n').slice(1); // skip header
+                
+                peerData = rows.map(row => {
+                    const cols = row.split(',');
+                    if (cols.length < 9) return null;
+                    return {
+                        userId: parseInt(cols[0]),
+                        age: parseInt(cols[1]),
+                        occupation: cols[2].trim().toLowerCase(),
+                        income: parseFloat(cols[3]),
+                        expenses: parseFloat(cols[4]),
+                        needs: parseFloat(cols[5]),
+                        wants: parseFloat(cols[6]),
+                        actualSavings: parseFloat(cols[7]),
+                        healthScore: parseFloat(cols[8])
+                    };
+                }).filter(r => r !== null);
+            } catch (e) {
+                console.error("Failed to load peer dataset. Falling back to synthetic model.", e);
+            }
+        }
+
+        // 3. ML Logic: k-NN classifier/regression using JavaScript
+        runMLPeerMatching = async function() {
+            // Map UI occupation to matching value
+            const incMap = {
+                below_10k: 5000,
+                '10k_30k': 20000,
+                '30k_60k': 45000,
+                above_60k: 90000
+            };
+            const userIncomeVal = incMap[userProfile.incomeRange] || 25000;
+
+            let userAge = 30;
+            if (userProfile.dob) {
+                const birthYear = new Date(userProfile.dob).getFullYear();
+                userAge = new Date().getFullYear() - birthYear;
+            }
+
+            // Attempt to fetch prediction from Python backend first
+            try {
+                const response = await fetch('http://127.0.0.1:5000/api/predict_health', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        age: userAge,
+                        occupation: userProfile.occupation,
+                        income: userIncomeVal
+                    })
+                });
+                const result = await response.json();
+                if (result.status === 'success') {
+                    // Only update peer comparison text — Health Score card uses localStorage formula
+                    const peerCardText = `<strong>[Python Server ML Model]</strong><br>Peers with similar careers/income save an average of <strong>₹${result.predicted_peer_savings.toLocaleString('en-IN')}</strong> per month. Your current estimated savings capability is <strong>₹${Math.round(monthlySavingsRate).toLocaleString('en-IN')}</strong> per month.`;
+                    document.getElementById('ai-peer-text').innerHTML = peerCardText;
+                    return; // Successfully used Python ML server!
+                }
+            } catch (error) {
+                console.warn("Python backend offline, falling back to local JS k-NN model.", error);
+            }
+
+            // --- Local JS k-NN Fallback ---
+            if (peerData.length === 0) {
+                document.getElementById('ai-peer-text').textContent = "Model offline. Keep saving to hit your targets!";
+                document.getElementById('ai-health-score').textContent = "78%";
+                return;
+            }
+
+            const occMap = {
+                student: 'student',
+                salaried: 'working professional',
+                business: 'entrepreneur',
+                homemaker: 'homemaker',
+                freelancer: 'working professional'
+            };
+            const mappedOcc = occMap[userProfile.occupation] || 'working professional';
+
+            const sameOccPeers = peerData.filter(p => p.occupation === mappedOcc);
+            const searchPool = sameOccPeers.length > 0 ? sameOccPeers : peerData;
+
+            const scoredPeers = searchPool.map(peer => {
+                const ageDiff = peer.age - userAge;
+                const incomeDiff = (peer.income - userIncomeVal) * 0.001;
+                const distance = Math.sqrt(ageDiff * ageDiff + incomeDiff * incomeDiff);
+                return { peer, distance };
+            });
+
+            scoredPeers.sort((a, b) => a.distance - b.distance);
+            const k = Math.min(5, scoredPeers.length);
+            const topNeighbors = scoredPeers.slice(0, k);
+
+            let sumScore = 0;
+            let sumSavings = 0;
+            topNeighbors.forEach(n => {
+                sumScore += n.peer.healthScore;
+                sumSavings += n.peer.actualSavings;
+            });
+
+            const predictedScore = Math.round(sumScore / k);
+            const predictedPeerSavings = Math.round(sumSavings / k);
+
+            // Only update peer comparison text — Health Score card uses localStorage formula
+            const peerCardText = `<strong>[Local JS Model Fallback]</strong><br>Peers save an average of <strong>₹${predictedPeerSavings.toLocaleString('en-IN')}</strong> per month. Your current estimated savings capability is <strong>₹${Math.round(monthlySavingsRate).toLocaleString('en-IN')}</strong> per month.`;
+            document.getElementById('ai-peer-text').innerHTML = peerCardText;
+        }
+
+        // 4. Goal Storage management
+        function loadGoalsFromStorage() {
+            goals = JSON.parse(localStorage.getItem('sheFinanceSavingsGoals')) || [
+                {
+                    id: 1,
+                    name: 'Gold Ring for Diwali',
+                    category: 'gold',
+                    target: 40000,
+                    saved: 12000,
+                    date: '2026-11-01'
+                },
+                {
+                    id: 2,
+                    name: 'Emergency Medical Fund',
+                    category: 'emergency',
+                    target: 50000,
+                    saved: 18000,
+                    date: '2027-06-01'
+                }
+            ];
+            // Save initial defaults if empty
+            if (!localStorage.getItem('sheFinanceSavingsGoals')) {
+                localStorage.setItem('sheFinanceSavingsGoals', JSON.stringify(goals));
+            }
+        }
+
+        // 5. Add savings goal
+        function saveNewGoal(e) {
+            e.preventDefault();
+            const name = document.getElementById('goal-name').value.trim();
+            const category = document.getElementById('goal-category').value;
+            const target = parseFloat(document.getElementById('goal-target').value);
+            const saved = parseFloat(document.getElementById('goal-initial').value) || 0;
+            const date = document.getElementById('goal-date').value;
+
+            if (saved > target) {
+                showToast("Initial savings cannot be greater than target amount!", "#e74c3c");
+                return;
+            }
+
+            const newGoal = {
+                id: Date.now(),
+                name,
+                category,
+                target,
+                saved,
+                date
+            };
+
+            goals.push(newGoal);
+            localStorage.setItem('sheFinanceSavingsGoals', JSON.stringify(goals));
+            
+            // reset form
+            document.getElementById('goal-form').reset();
+            document.getElementById('goal-initial').value = "0";
+
+            renderGoals();
+            showToast("New Savings Goal Created successfully!", "#2ecc71");
+        }
+
+        // 6. Deposit money to goal
+        addMoney = function(id) {
+            const amount = parseFloat(prompt("Enter amount to save (₹):"));
+            if (isNaN(amount) || amount <= 0) return;
+
+            const goal = goals.find(g => g.id === id);
+            if (goal) {
+                if (goal.saved + amount > goal.target) {
+                    showToast("Deposited! Goal achieved! 🎉", "#2ecc71");
+                    goal.saved = goal.target;
+                } else {
+                    goal.saved += amount;
+                    showToast(`₹${amount.toLocaleString('en-IN')} added to ${goal.name}!`, "#2ecc71");
+                }
+                localStorage.setItem('sheFinanceSavingsGoals', JSON.stringify(goals));
+                renderGoals();
+            }
+        }
+
+        // 7. Withdraw money from goal
+        subMoney = function(id) {
+            const amount = parseFloat(prompt("Enter amount to withdraw (₹):"));
+            if (isNaN(amount) || amount <= 0) return;
+
+            const goal = goals.find(g => g.id === id);
+            if (goal) {
+                if (goal.saved - amount < 0) {
+                    showToast("You don't have that much saved in this goal!", "#e74c3c");
+                    return;
+                }
+                goal.saved -= amount;
+                showToast(`₹${amount.toLocaleString('en-IN')} withdrawn from ${goal.name}.`, "#e67e22");
+                localStorage.setItem('sheFinanceSavingsGoals', JSON.stringify(goals));
+                renderGoals();
+            }
+        }
+
+        // 8. Delete Goal
+        deleteGoal = function(id) {
+            if (confirm("Are you sure you want to delete this goal?")) {
+                goals = goals.filter(g => g.id !== id);
+                localStorage.setItem('sheFinanceSavingsGoals', JSON.stringify(goals));
+                renderGoals();
+                showToast("Goal deleted.", "#ff4757");
+            }
+        }
+
+        // 9. Detailed AI Simulation (Linear Regression / Forecast Model)
+        predictGoal = async function(id) {
+            const goal = goals.find(g => g.id === id);
+            if (!goal) return;
+
+            document.getElementById('sim-name').textContent = goal.name;
+            document.getElementById('sim-target').textContent = '₹ ' + goal.target.toLocaleString('en-IN');
+            document.getElementById('sim-saved').textContent = '₹ ' + goal.saved.toLocaleString('en-IN');
+            document.getElementById('sim-monthly-rate').textContent = '₹ ' + Math.round(monthlySavingsRate).toLocaleString('en-IN');
+            
+            const plannedDate = new Date(goal.date);
+            document.getElementById('sim-planned-date').textContent = plannedDate.toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric'});
+
+            const remaining = goal.target - goal.saved;
+
+            // Attempt to fetch linear regression timeline from Python Flask Backend
+            try {
+                const response = await fetch('http://127.0.0.1:5000/api/predict_timeline', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        target_amount: goal.target,
+                        saved_amount: goal.saved,
+                        monthly_savings: monthlySavingsRate,
+                        target_date: goal.date
+                    })
+                });
+                const result = await response.json();
+                if (result.status === 'success') {
+                    // Update UI with Python Server Linear Regression results
+                    const finishDate = new Date(result.predicted_finish_date);
+                    document.getElementById('sim-predicted-date').textContent = finishDate.toLocaleDateString('en-IN', {month:'long', year:'numeric'}) + " [Python ML]";
+                    
+                    const statusLabelEl = document.getElementById('sim-status');
+                    statusLabelEl.textContent = result.status_label;
+                    if (result.status_label.includes("Track")) {
+                        statusLabelEl.style.color = "#2ecc71";
+                    } else if (result.status_label.includes("Delayed")) {
+                        statusLabelEl.style.color = "#e67e22";
+                    } else {
+                        statusLabelEl.style.color = "#e74c3c";
+                    }
+                    
+                    document.getElementById('sim-recommendation-text').innerHTML = result.recommendation;
+                    document.getElementById('prediction-modal').classList.add('active');
+                    return;
+                }
+            } catch (error) {
+                console.warn("Python backend offline for regression, falling back to local JS Linear model.", error);
+            }
+
+            // --- Local JS Fallback ---
+            if (monthlySavingsRate <= 0) {
+                document.getElementById('sim-predicted-date').textContent = "Never [Local JS]";
+                document.getElementById('sim-status').textContent = "🚨 CRITICAL DELAY";
+                document.getElementById('sim-status').style.color = "#e74c3c";
+                document.getElementById('sim-recommendation-text').innerHTML = `Your actual monthly savings is ₹0 or negative. AI recommends cutting down discretionary expenses (like Shopping or Entertainment) in your <strong>Budget Planner</strong> by ₹1,500/month to kickstart this goal.`;
+            } else {
+                const monthsRequired = remaining / monthlySavingsRate;
+                const predictedDate = new Date();
+                predictedDate.setMonth(predictedDate.getMonth() + Math.ceil(monthsRequired));
+
+                document.getElementById('sim-predicted-date').textContent = predictedDate.toLocaleDateString('en-IN', {month:'long', year:'numeric'}) + " [Local JS]";
+
+                const diffTime = predictedDate - plannedDate;
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                if (diffDays <= 0) {
+                    document.getElementById('sim-status').textContent = "🟢 ON TRACK (Early / Safe)";
+                    document.getElementById('sim-status').style.color = "#2ecc71";
+                    document.getElementById('sim-recommendation-text').innerHTML = `Excellent financial behavior! At this rate, you will achieve this goal <strong>${Math.abs(Math.round(diffDays / 30))} months early</strong>. Consider investing the excess savings in a safe Fixed Deposit (FD) or Gold scheme for compound interest.`;
+                } else {
+                    document.getElementById('sim-status').textContent = "⚠️ DELAYED";
+                    document.getElementById('sim-status').style.color = "#e67e22";
+                    const monthlyGap = Math.round(remaining / ((plannedDate - new Date()) / (1000 * 60 * 60 * 24 * 30.4)));
+                    document.getElementById('sim-recommendation-text').innerHTML = `To reach your target on time by ${plannedDate.toLocaleDateString('en-IN', {month:'short', year:'numeric'})}, you need to save <strong>₹${monthlyGap.toLocaleString('en-IN')}</strong> per month. AI recommends moving ₹${Math.abs(monthlyGap - Math.round(monthlySavingsRate)).toLocaleString('en-IN')} from wants to needs.`;
+                }
+            }
+
+            document.getElementById('prediction-modal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('prediction-modal').classList.remove('active');
+        }
+
+        // 10. Render Goals List
+        function renderGoals() {
+            const listContainer = document.getElementById('active-goals-list');
+            if (goals.length === 0) {
+                listContainer.innerHTML = '<div style="text-align:center; padding: 40px; background:#fff; border-radius:15px; box-shadow:0 5px 15px rgba(0,0,0,0.05); color:var(--text-light);"><i class="fa-solid fa-face-smile" style="font-size:2.5rem; color:var(--secondary-color); margin-bottom:15px;"></i><p>No active goals yet! Enter details on the left to set your first goal.</p></div>';
+                
+                document.getElementById('total-target').textContent = '₹ 0';
+                document.getElementById('total-saved').textContent = '₹ 0';
+                document.getElementById('total-remaining').textContent = '₹ 0';
+                return;
+            }
+
+            let totalTarget = 0;
+            let totalSaved = 0;
+            let html = '';
+
+            goals.forEach(goal => {
+                totalTarget += goal.target;
+                totalSaved += goal.saved;
+
+                const percent = Math.min((goal.saved / goal.target) * 100, 100);
+                const remaining = goal.target - goal.saved;
+                const catInfo = CATEGORIES[goal.category] || CATEGORIES.other;
+                const targetDateStr = new Date(goal.date).toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric'});
+
+                html += `
+                <div class="goal-item">
+                    <div class="goal-header">
+                        <div class="goal-title-wrapper">
+                            <div class="goal-icon"><i class="fa-solid ${catInfo.icon}"></i></div>
+                            <div class="goal-title">
+                                <h4>${goal.name}</h4>
+                                <span>Category: ${catInfo.label}</span>
+                            </div>
+                        </div>
+                        <div class="goal-target-val">
+                            <h4>₹ ${goal.target.toLocaleString('en-IN')}</h4>
+                            <span>Target: ${targetDateStr}</span>
+                        </div>
+                    </div>
+
+                    <div class="goal-progress-section">
+                        <div class="goal-progress-meta">
+                            <span>Saved: <strong>₹ ${goal.saved.toLocaleString('en-IN')}</strong></span>
+                            <span>${Math.round(percent)}%</span>
+                        </div>
+                        <div class="goal-bar-bg">
+                            <div class="goal-bar-fill" style="width: ${percent}%"></div>
+                        </div>
+                        <div class="goal-progress-meta" style="margin-top: 5px; font-size: 0.8rem;">
+                            <span>Remaining to save: <strong>₹ ${remaining.toLocaleString('en-IN')}</strong></span>
+                        </div>
+                    </div>
+
+                    <div class="goal-actions">
+                        <button class="btn-action btn-add-val" onclick="addMoney(${goal.id})"><i class="fa-solid fa-plus"></i> Save</button>
+                        <button class="btn-action btn-sub-val" onclick="subMoney(${goal.id})"><i class="fa-solid fa-minus"></i> Withdraw</button>
+                        <button class="btn-action btn-predict-val" onclick="predictGoal(${goal.id})"><i class="fa-solid fa-brain"></i> AI Predict</button>
+                        <button class="btn-action btn-delete-goal" onclick="deleteGoal(${goal.id})"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                </div>
+                `;
+            });
+
+            listContainer.innerHTML = html;
+
+            // Update top overview cards
+            document.getElementById('total-target').textContent = '₹ ' + totalTarget.toLocaleString('en-IN');
+            document.getElementById('total-saved').textContent = '₹ ' + totalSaved.toLocaleString('en-IN');
+            
+            const remainingToSave = totalTarget - totalSaved;
+            document.getElementById('total-remaining').textContent = '₹ ' + remainingToSave.toLocaleString('en-IN');
+        }
+
+        // 11. Toast Notifications helper
+        function showToast(msg, bg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-msg').textContent = msg;
+            toast.style.background = bg;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        function logout() {
+            // Only clear auth session — financial data stays safe!
+            localStorage.removeItem('userName');
+            localStorage.removeItem('userEmail');
+            localStorage.removeItem('userAvatar');
+            localStorage.removeItem('userProfile');
+        }
+    </script>
+</body>
+</html>

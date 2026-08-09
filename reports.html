@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports & Analytics - SheFinance</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .reports-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 25px; margin-bottom: 25px; }
+        .chart-card { background: #fff; border-radius: 15px; padding: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .chart-card h3 { font-size: 1.2rem; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #eee; padding-bottom: 12px; }
+        
+        .health-score-card { text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center; background: linear-gradient(135deg, #fcfbf9, #f4eee2); }
+        .score-circle { width: 150px; height: 150px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #fff; box-shadow: 0 10px 30px rgba(201,159,85,0.2); margin-bottom: 20px; border: 8px solid var(--secondary-color); }
+        .score-number { font-size: 3rem; font-family: 'Playfair Display', serif; font-weight: 700; color: var(--primary-color); line-height: 1; }
+        .score-label { font-size: 0.9rem; color: var(--text-light); text-transform: uppercase; letter-spacing: 1px; margin-top: 5px; }
+        .health-status { font-size: 1.2rem; font-weight: 600; color: #2ecc71; margin-bottom: 10px; }
+        .health-desc { font-size: 0.95rem; color: var(--text-light); padding: 0 20px; }
+
+        .insights-list { list-style: none; padding: 0; }
+        .insights-list li { display: flex; gap: 15px; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
+        .insights-list li:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+        .insight-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
+        .insight-icon.warning { background: rgba(231,76,60,0.1); color: #e74c3c; }
+        .insight-icon.success { background: rgba(46,204,113,0.1); color: #2ecc71; }
+        .insight-icon.info { background: rgba(52,152,219,0.1); color: #3498db; }
+        .insight-text h4 { font-size: 1rem; margin-bottom: 4px; }
+        .insight-text p { font-size: 0.85rem; color: var(--text-light); }
+
+        .chart-container { position: relative; height: 300px; width: 100%; }
+
+        @media (max-width: 992px) {
+            .reports-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body class="dashboard-body">
+
+    <aside class="sidebar">
+        <div class="sidebar-logo"><a href="index.html"><h2>She<span>Finance</span></h2></a></div>
+        <ul class="sidebar-menu">
+            <li><a href="dashboard.html"><i class="fa-solid fa-house"></i> Overview</a></li>
+            <li><a href="tracker.html"><i class="fa-solid fa-money-bill-transfer"></i> Income & Expense</a></li>
+            <li><a href="budget.html"><i class="fa-solid fa-wallet"></i> Budget Planner</a></li>
+            <li><a href="savings.html"><i class="fa-solid fa-bullseye"></i> Savings Goals</a></li>
+            <li><a href="chatbot.html"><i class="fa-solid fa-robot"></i> AI Chatbot</a></li>
+            <li><a href="schemes.html"><i class="fa-solid fa-building-columns"></i> Govt Schemes</a></li>
+            <li><a href="education.html"><i class="fa-solid fa-book-open-reader"></i> Education Hub</a></li>
+            <li class="active"><a href="reports.html"><i class="fa-solid fa-chart-pie"></i> Reports</a></li>
+        </ul>
+        <div class="sidebar-bottom">
+            <a href="index.html" class="logout-btn" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+        </div>
+    </aside>
+
+    <main class="dashboard-main">
+        <header class="dashboard-header">
+            <div class="header-title">
+                <h2>Reports & Analytics</h2>
+                <p>Visualize your financial habits and monitor your financial health score.</p>
+            </div>
+            <div class="header-profile">
+                <a href="profile.html"><div class="profile-pic"><img id="profile-img" src="" alt="Profile"></div></a>
+                <span id="user-name" class="user-name"></span>
+            </div>
+        </header>
+
+        <div class="reports-grid">
+            <div class="chart-card">
+                <h3><i class="fa-solid fa-chart-pie"></i> Expenses by Category</h3>
+                <div class="chart-container">
+                    <canvas id="expenseChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-card health-score-card">
+                <h3 style="border:none; justify-content:center;">Financial Health Score</h3>
+                <div class="score-circle">
+                    <div class="score-number" id="health-score">85</div>
+                    <div class="score-label">Out of 100</div>
+                </div>
+                <div class="health-status" id="health-status">Excellent</div>
+                <p class="health-desc" id="health-desc">Your saving habits are great! You are spending well within your budget.</p>
+            </div>
+        </div>
+
+        <div class="reports-grid">
+            <div class="chart-card">
+                <h3><i class="fa-solid fa-chart-line"></i> Income vs Expense (Last 6 Months)</h3>
+                <div class="chart-container">
+                    <canvas id="trendChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <h3><i class="fa-solid fa-lightbulb"></i> AI Insights</h3>
+                <ul class="insights-list" id="ai-insights">
+                    <!-- JS populated -->
+                </ul>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var name = localStorage.getItem('userName') || 'User';
+            var formatted = name.split(' ').map(function(w){return w.charAt(0).toUpperCase()+w.slice(1);}).join(' ');
+            document.getElementById('user-name').innerText = formatted;
+            var avatar = localStorage.getItem('userAvatar');
+            document.getElementById('profile-img').src = avatar || ('https://ui-avatars.com/api/?name=' + encodeURIComponent(formatted) + '&background=c99f55&color=fff');
+            
+            renderChartsAndHealth();
+        });
+
+        function getTransactions() { try { return JSON.parse(localStorage.getItem('sheFinanceTransactions') || '[]'); } catch(e) { return []; } }
+        function getBudgets() { try { return JSON.parse(localStorage.getItem('sheFinanceBudgets') || '{}'); } catch(e) { return {}; } }
+
+        function renderChartsAndHealth() {
+            var txs = getTransactions();
+            var now = new Date();
+            var currentMonthStr = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0');
+
+            // 1. Expense by Category (Current Month)
+            var expensesByCategory = {};
+            var totalExpenseMonth = 0;
+            var totalIncomeMonth = 0;
+
+            txs.forEach(function(tx) {
+                var txMonth = tx.date.substring(0,7);
+                if (txMonth === currentMonthStr) {
+                    if (tx.type === 'expense') {
+                        expensesByCategory[tx.category] = (expensesByCategory[tx.category] || 0) + tx.amount;
+                        totalExpenseMonth += tx.amount;
+                    } else if (tx.type === 'income') {
+                        totalIncomeMonth += tx.amount;
+                    }
+                }
+            });
+
+            var pieCtx = document.getElementById('expenseChart').getContext('2d');
+            if (Object.keys(expensesByCategory).length === 0) {
+                expensesByCategory = {'No Data': 1}; // Fallback for chart
+            }
+            
+            new Chart(pieCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(expensesByCategory),
+                    datasets: [{
+                        data: Object.values(expensesByCategory),
+                        backgroundColor: ['#e74c3c', '#3498db', '#9b59b6', '#f1c40f', '#e67e22', '#2ecc71', '#34495e', '#95a5a6'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { position: 'right' } },
+                    cutout: '70%'
+                }
+            });
+
+            // 2. Financial Health Score calculation
+            var score = 50; // Base score
+            
+            // Factor 1: Savings rate
+            if (totalIncomeMonth > 0) {
+                var savingsRate = ((totalIncomeMonth - totalExpenseMonth) / totalIncomeMonth) * 100;
+                if (savingsRate > 20) score += 30;
+                else if (savingsRate > 10) score += 15;
+                else if (savingsRate < 0) score -= 20;
+            } else if (totalExpenseMonth > 0) {
+                score -= 30; // spending without income
+            }
+
+            // Factor 2: Budget adherence (simplified)
+            var budgets = getBudgets()[currentMonthStr] || {};
+            var totalBudget = Object.values(budgets).reduce((a, b) => a + b, 0);
+            if (totalBudget > 0) {
+                var budgetUsage = (totalExpenseMonth / totalBudget) * 100;
+                if (budgetUsage <= 90) score += 20;
+                else if (budgetUsage > 100) score -= 15;
+            }
+
+            // Clamp score
+            score = Math.max(10, Math.min(100, Math.round(score)));
+            
+            // Default empty state UI if no data
+            if (totalIncomeMonth === 0 && totalExpenseMonth === 0) {
+                score = 0;
+            }
+
+            var scoreEl = document.getElementById('health-score');
+            var statusEl = document.getElementById('health-status');
+            var descEl = document.getElementById('health-desc');
+            var circleEl = document.querySelector('.score-circle');
+
+            scoreEl.innerText = score;
+            if (score === 0) {
+                statusEl.innerText = "No Data Yet";
+                statusEl.style.color = "#95a5a6";
+                circleEl.style.borderColor = "#95a5a6";
+                descEl.innerText = "Add income and expenses to calculate your score.";
+            } else if (score >= 80) {
+                statusEl.innerText = "Excellent";
+                statusEl.style.color = "#2ecc71";
+                circleEl.style.borderColor = "#2ecc71";
+                descEl.innerText = "Fantastic! You are saving a good portion of your income and sticking to your budget.";
+            } else if (score >= 50) {
+                statusEl.innerText = "Fair";
+                statusEl.style.color = "#f39c12";
+                circleEl.style.borderColor = "#f39c12";
+                descEl.innerText = "You're doing okay, but there is room for improvement. Try to reduce discretionary expenses.";
+            } else {
+                statusEl.innerText = "Needs Attention";
+                statusEl.style.color = "#e74c3c";
+                circleEl.style.borderColor = "#e74c3c";
+                descEl.innerText = "Warning: Your expenses are very high relative to your income. Please review your budget immediately.";
+            }
+
+            // 3. AI Insights
+            var insightsHtml = '';
+            if (totalIncomeMonth === 0 && totalExpenseMonth === 0) {
+                insightsHtml = '<li><div class="insight-icon info"><i class="fa-solid fa-plus"></i></div><div class="insight-text"><h4>Start Tracking</h4><p>Add your daily transactions in the Tracker to get personalized insights.</p></div></li>';
+            } else {
+                if (score >= 80) {
+                    insightsHtml += '<li><div class="insight-icon success"><i class="fa-solid fa-arrow-trend-up"></i></div><div class="insight-text"><h4>Great Savings Rate!</h4><p>You have a healthy surplus. Consider investing 50% of your remaining balance in a SIP.</p></div></li>';
+                }
+                
+                var topCategory = Object.keys(expensesByCategory).reduce((a, b) => expensesByCategory[a] > expensesByCategory[b] ? a : b, "");
+                if (topCategory && expensesByCategory[topCategory] > (totalIncomeMonth * 0.3)) {
+                    insightsHtml += '<li><div class="insight-icon warning"><i class="fa-solid fa-triangle-exclamation"></i></div><div class="insight-text"><h4>High Spend Alert</h4><p>You are spending a large portion on ' + topCategory + '. Try to cut back here next month.</p></div></li>';
+                } else if (topCategory) {
+                    insightsHtml += '<li><div class="insight-icon info"><i class="fa-solid fa-magnifying-glass-chart"></i></div><div class="insight-text"><h4>Top Category</h4><p>Most of your expenses went to ' + topCategory + ' this month.</p></div></li>';
+                }
+            }
+            document.getElementById('ai-insights').innerHTML = insightsHtml;
+
+            // 4. Trend Chart (Calculate actual past 6 months from localStorage, fallback to mock if no history)
+            var trendCtx = document.getElementById('trendChart').getContext('2d');
+            var months = [];
+            var incomeData = [];
+            var expenseData = [];
+
+            for(let i=5; i>=0; i--) {
+                let d = new Date();
+                d.setMonth(d.getMonth() - i);
+                let monthLabel = d.toLocaleString('default', { month: 'short' });
+                months.push(i === 0 ? 'This Month' : monthLabel);
+
+                let targetMonthStr = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+                
+                // Calculate actuals
+                let incSum = 0;
+                let expSum = 0;
+                txs.forEach(function(tx) {
+                    if (tx.date && tx.date.substring(0,7) === targetMonthStr) {
+                        if (tx.type === 'income') incSum += tx.amount;
+                        else expSum += tx.amount;
+                    }
+                });
+
+                // Blend with realistic fallback if absolutely NO data is available for that month
+                if (incSum === 0 && expSum === 0) {
+                    let baseIncome = [38000, 42000, 40000, 45000, 43000, 45000];
+                    let baseExpense = [24000, 31000, 29000, 34000, 27000, 25000];
+                    incomeData.push(baseIncome[5 - i]);
+                    expenseData.push(baseExpense[5 - i]);
+                } else {
+                    incomeData.push(incSum);
+                    expenseData.push(expSum);
+                }
+            }
+
+            new Chart(trendCtx, {
+                type: 'line',
+                data: {
+                    labels: months,
+                    datasets: [
+                        { label: 'Income', data: incomeData, borderColor: '#2ecc71', backgroundColor: 'rgba(46,204,113,0.1)', fill: true, tension: 0.4 },
+                        { label: 'Expense', data: expenseData, borderColor: '#e74c3c', backgroundColor: 'rgba(231,76,60,0.1)', fill: true, tension: 0.4 }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { position: 'top' } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+
+        function logout() { localStorage.removeItem('userName'); localStorage.removeItem('userEmail'); localStorage.removeItem('userAvatar'); }
+        window.addEventListener('scroll', function() {
+            var s = document.querySelector('.sidebar');
+            if (s) { s.classList.toggle('scrolled', window.scrollY > 10); }
+        });
+    </script>
+</body>
+</html>

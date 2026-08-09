@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Education Hub - SheFinance</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .edu-nav { display: flex; gap: 20px; margin-bottom: 30px; border-bottom: 1px solid #eee; }
+        .edu-nav button { background: none; border: none; padding: 15px 20px; font-family: 'Outfit', sans-serif; font-size: 1rem; font-weight: 500; color: var(--text-light); cursor: pointer; position: relative; transition: all 0.3s; }
+        .edu-nav button.active { color: var(--primary-color); font-weight: 600; }
+        .edu-nav button.active::after { content: ''; position: absolute; bottom: -1px; left: 0; width: 100%; height: 3px; background: var(--secondary-color); border-radius: 3px 3px 0 0; }
+
+        .edu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; }
+        
+        .article-card { background: #fff; border-radius: 15px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.05); transition: all 0.3s; border: 1px solid #eee; display: flex; flex-direction: column; cursor: pointer; }
+        .article-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .article-img { height: 180px; position: relative; background: #ddd; }
+        .article-img img { width: 100%; height: 100%; object-fit: cover; }
+        .article-tag { position: absolute; top: 15px; left: 15px; background: var(--primary-color); color: #fff; padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; }
+        .article-content { padding: 25px; flex: 1; display: flex; flex-direction: column; }
+        .article-content h3 { font-size: 1.2rem; margin-bottom: 10px; line-height: 1.4; color: var(--primary-color); }
+        .article-content p { color: var(--text-light); font-size: 0.9rem; line-height: 1.6; margin-bottom: 20px; flex: 1; }
+        .article-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f0f0f0; padding-top: 15px; font-size: 0.85rem; color: var(--text-light); }
+        .article-footer i { margin-right: 5px; color: var(--secondary-color); }
+
+        .video-card { position: relative; border-radius: 15px; overflow: hidden; background: #000; cursor: pointer; group: hover; }
+        .video-thumbnail { width: 100%; height: 200px; object-fit: cover; opacity: 0.7; transition: all 0.3s; }
+        .video-card:hover .video-thumbnail { opacity: 0.4; }
+        .play-btn { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 60px; height: 60px; background: rgba(201,159,85,0.9); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; transition: all 0.3s; z-index: 2; }
+        .video-card:hover .play-btn { transform: translate(-50%, -50%) scale(1.1); }
+        .video-info { position: absolute; bottom: 0; left: 0; width: 100%; padding: 20px; background: linear-gradient(transparent, rgba(0,0,0,0.8)); color: #fff; z-index: 2; }
+        .video-info h3 { color: #fff; font-size: 1.1rem; margin-bottom: 5px; }
+        .video-info p { font-size: 0.85rem; opacity: 0.8; }
+        
+        .tab-content { display: none; }
+        .tab-content.active { display: grid; }
+    </style>
+</head>
+<body class="dashboard-body">
+
+    <aside class="sidebar">
+        <div class="sidebar-logo"><a href="index.html"><h2>She<span>Finance</span></h2></a></div>
+        <ul class="sidebar-menu">
+            <li><a href="dashboard.html"><i class="fa-solid fa-house"></i> Overview</a></li>
+            <li><a href="tracker.html"><i class="fa-solid fa-money-bill-transfer"></i> Income & Expense</a></li>
+            <li><a href="budget.html"><i class="fa-solid fa-wallet"></i> Budget Planner</a></li>
+            <li><a href="savings.html"><i class="fa-solid fa-bullseye"></i> Savings Goals</a></li>
+            <li><a href="chatbot.html"><i class="fa-solid fa-robot"></i> AI Chatbot</a></li>
+            <li><a href="schemes.html"><i class="fa-solid fa-building-columns"></i> Govt Schemes</a></li>
+            <li class="active"><a href="education.html"><i class="fa-solid fa-book-open-reader"></i> Education Hub</a></li>
+            <li><a href="reports.html"><i class="fa-solid fa-chart-pie"></i> Reports</a></li>
+        </ul>
+        <div class="sidebar-bottom">
+            <a href="index.html" class="logout-btn" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+        </div>
+    </aside>
+
+    <main class="dashboard-main">
+        <header class="dashboard-header">
+            <div class="header-title">
+                <h2>Financial Education Hub</h2>
+                <p>Empower yourself with knowledge. Read articles and watch tutorials to master your money.</p>
+            </div>
+            <div class="header-profile">
+                <a href="profile.html"><div class="profile-pic"><img id="profile-img" src="" alt="Profile"></div></a>
+                <span id="user-name" class="user-name"></span>
+            </div>
+        </header>
+
+        <div class="edu-nav">
+            <button class="active" onclick="switchTab('articles', this)">Articles & Guides</button>
+            <button onclick="switchTab('videos', this)">Video Tutorials</button>
+        </div>
+
+        <div id="articles" class="tab-content edu-grid active">
+            <div class="article-card">
+                <div class="article-img">
+                    <span class="article-tag">Investing</span>
+                    <img src="https://images.unsplash.com/photo-1579532537598-459ecdaf39cc?w=500&auto=format&fit=crop" alt="Article 1">
+                </div>
+                <div class="article-content">
+                    <h3>The Power of Compounding: Why Start Early?</h3>
+                    <p>Learn how compound interest can turn small, regular savings into a massive retirement fund over time.</p>
+                    <div class="article-footer">
+                        <span><i class="fa-regular fa-clock"></i> 5 min read</span>
+                        <span>Beginner</span>
+                    </div>
+                </div>
+            </div>
+            <div class="article-card">
+                <div class="article-img">
+                    <span class="article-tag">Budgeting</span>
+                    <img src="https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=500&auto=format&fit=crop" alt="Article 2">
+                </div>
+                <div class="article-content">
+                    <h3>Mastering the 50/30/20 Budget Rule</h3>
+                    <p>A simple, highly effective budgeting framework that balances your needs, wants, and savings goals without stress.</p>
+                    <div class="article-footer">
+                        <span><i class="fa-regular fa-clock"></i> 4 min read</span>
+                        <span>Beginner</span>
+                    </div>
+                </div>
+            </div>
+            <div class="article-card">
+                <div class="article-img">
+                    <span class="article-tag">Protection</span>
+                    <img src="https://images.unsplash.com/photo-1563986768609-322da13575f3?w=500&auto=format&fit=crop" alt="Article 3">
+                </div>
+                <div class="article-content">
+                    <h3>Why Women Need Term Life Insurance</h3>
+                    <p>Understanding the importance of securing your family's financial future with the right life insurance policy.</p>
+                    <div class="article-footer">
+                        <span><i class="fa-regular fa-clock"></i> 6 min read</span>
+                        <span>Intermediate</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="videos" class="tab-content edu-grid">
+            <div class="video-card">
+                <img class="video-thumbnail" src="https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=500&auto=format&fit=crop" alt="Video">
+                <div class="play-btn"><i class="fa-solid fa-play"></i></div>
+                <div class="video-info">
+                    <h3>Mutual Funds vs Stocks</h3>
+                    <p>Duration: 10:45 • Investing</p>
+                </div>
+            </div>
+            <div class="video-card">
+                <img class="video-thumbnail" src="https://images.unsplash.com/photo-1579621970588-a35d0e7ab9b6?w=500&auto=format&fit=crop" alt="Video">
+                <div class="play-btn"><i class="fa-solid fa-play"></i></div>
+                <div class="video-info">
+                    <h3>How to Build an Emergency Fund</h3>
+                    <p>Duration: 08:20 • Savings</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var name = localStorage.getItem('userName') || 'User';
+            var formatted = name.split(' ').map(function(w){return w.charAt(0).toUpperCase()+w.slice(1);}).join(' ');
+            document.getElementById('user-name').innerText = formatted;
+            var avatar = localStorage.getItem('userAvatar');
+            document.getElementById('profile-img').src = avatar || ('https://ui-avatars.com/api/?name=' + encodeURIComponent(formatted) + '&background=c99f55&color=fff');
+        });
+
+        function switchTab(tabId, btn) {
+            document.querySelectorAll('.tab-content').forEach(function(el) { el.classList.remove('active'); });
+            document.querySelectorAll('.edu-nav button').forEach(function(el) { el.classList.remove('active'); });
+            document.getElementById(tabId).classList.add('active');
+            btn.classList.add('active');
+        }
+
+        function logout() { localStorage.removeItem('userName'); localStorage.removeItem('userEmail'); localStorage.removeItem('userAvatar'); }
+        window.addEventListener('scroll', function() {
+            var s = document.querySelector('.sidebar');
+            if (s) { s.classList.toggle('scrolled', window.scrollY > 10); }
+        });
+    </script>
+</body>
+</html>
