@@ -91,7 +91,7 @@
             } catch(e) { return null; }
         }
 
-        function handleCredentialResponse(response) {
+        async function handleCredentialResponse(response) {
             var payload = decodeJWT(response.credential);
             if (!payload) { alert('Google sign-up failed. Please try again.'); return; }
 
@@ -110,7 +110,7 @@
                 return;
             }
 
-            // Register the Google user
+            // Register the Google user in localStorage
             users.push({ name: name, email: email, password: null, provider: 'google' });
             localStorage.setItem('registeredUsers', JSON.stringify(users));
 
@@ -120,12 +120,26 @@
             localStorage.setItem('userName',  name);
             localStorage.setItem('userEmail', email);
 
+            // Call Backend to send Welcome Email
+            try {
+                await fetch('http://localhost:3000/api/google-login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        credential: response.credential, 
+                        isRegister: true // This tells the backend to SEND the email
+                    })
+                });
+            } catch (err) {
+                console.error("Backend unreachable, but local registration successful:", err);
+            }
+
             alert('Registration successful via Google! Welcome to SheFinance.');
             window.location.href = 'onboarding.html';
         }
     </script>
     <script>
-        document.getElementById('registerForm').addEventListener('submit', function(e) {
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             var fullname = document.getElementById('fullname').value.trim();
             var email    = document.getElementById('email').value.trim().toLowerCase();
@@ -157,6 +171,20 @@
             localStorage.removeItem('userAvatar');
             localStorage.setItem('userName',  fullname);
             localStorage.setItem('userEmail', email);
+
+            // Call Backend to send Welcome Email for Standard Registration
+            try {
+                await fetch('http://localhost:3000/api/send-welcome', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        email: email, 
+                        name: fullname 
+                    })
+                });
+            } catch (err) {
+                console.error("Backend unreachable, but local registration successful:", err);
+            }
 
             alert("Account created successfully! Let's get started.");
             window.location.href = 'onboarding.html';

@@ -28,7 +28,6 @@
             <li><a href="budget.html"><i class="fa-solid fa-wallet"></i> Budget Planner</a></li>
             <li><a href="savings.html"><i class="fa-solid fa-bullseye"></i> Savings Goals</a></li>
             <li><a href="chatbot.html"><i class="fa-solid fa-robot"></i> AI Chatbot</a></li>
-            <li><a href="schemes.html"><i class="fa-solid fa-building-columns"></i> Govt Schemes</a></li>
             <li><a href="education.html"><i class="fa-solid fa-book-open-reader"></i> Education Hub</a></li>
             <li><a href="reports.html"><i class="fa-solid fa-chart-pie"></i> Reports</a></li>
         </ul>
@@ -46,15 +45,18 @@
                 <h2 id="welcome-msg">Welcome back! 👋</h2>
                 <p>Here is your financial summary for this month.</p>
             </div>
-            <div class="header-profile">
-                <a href="profile.html" title="Manage Profile">
-                    <div class="profile-pic">
-                        <img id="profile-img" src="https://ui-avatars.com/api/?name=User&background=c99f55&color=fff"
-                            alt="Profile">
+            <a href="profile.html" class="header-profile-link" title="Click to manage Profile & Settings">
+                <div class="header-profile">
+                    <div class="profile-pic-wrapper">
+                        <img id="profile-img" src="https://ui-avatars.com/api/?name=User&background=c99f55&color=fff" alt="Profile">
+                        <span class="profile-badge-icon"><i class="fa-solid fa-gear"></i></span>
                     </div>
-                </a>
-                <span id="user-name" class="user-name"></span>
-            </div>
+                    <div class="header-user-info">
+                        <span id="user-name" class="user-name">User</span>
+                        <span class="profile-hint-text">Manage Profile <i class="fa-solid fa-chevron-right"></i></span>
+                    </div>
+                </div>
+            </a>
         </header>
 
         <!-- Dashboard Content -->

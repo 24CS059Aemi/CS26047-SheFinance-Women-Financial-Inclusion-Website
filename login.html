@@ -104,7 +104,7 @@
             }
 
             // ---- Google Login (auto-register + login) ----
-            function handleCredentialResponse(response) {
+            async function handleCredentialResponse(response) {
                 var payload = decodeJWT(response.credential);
                 if (!payload) { alert('Google sign-in failed. Please try again.'); return; }
 
@@ -114,6 +114,7 @@
                 var users = getUsers();
                 var user  = users.find(function(u) { return u.email === email; });
 
+                var isNewRegistration = false;
                 if (!user) {
                     // Auto-register this Google user
                     users.push({ name: name, email: email, password: null, provider: 'google' });
@@ -121,10 +122,38 @@
                     // Fresh start
                     localStorage.removeItem('userProfile');
                     localStorage.removeItem('userAvatar');
+                    isNewRegistration = true;
                 }
 
-                // Login successful
-                sessionStart(name, email);
+                // Call Backend (to trigger Welcome Email only if new)
+                try {
+                    await fetch('http://localhost:3000/api/google-login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            credential: response.credential, 
+                            isRegister: isNewRegistration
+                        })
+                    });
+                } catch (err) {
+                    console.error("Backend unreachable, but local login successful:", err);
+                }
+
+                // Redirect to Onboarding if new, else Dashboard
+                if (isNewRegistration) {
+                    var prevEmail = localStorage.getItem('userEmail');
+                    if (prevEmail && prevEmail !== email) {
+                        localStorage.removeItem('userProfile');
+                        localStorage.removeItem('userAvatar');
+                    }
+                    localStorage.setItem('userName',  name);
+                    localStorage.setItem('userEmail', email);
+                    
+                    alert('Registration successful via Google! Welcome to SheFinance.');
+                    window.location.href = 'onboarding.html';
+                } else {
+                    sessionStart(name, email);
+                }
             }
 
             // ---- Start session and go to dashboard ----
