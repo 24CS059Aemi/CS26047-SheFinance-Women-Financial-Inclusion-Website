@@ -99,7 +99,8 @@
                     return;
                 }
 
-                // Login successful
+                // Login successful (User Role)
+                localStorage.setItem('userRole', 'user');
                 sessionStart(user.name, user.email);
             }
 

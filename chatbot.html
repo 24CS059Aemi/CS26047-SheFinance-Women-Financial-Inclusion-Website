@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SheFinance AI - Chatbot</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body class="dashboard-body">
+
+    <!-- Top Navigation Bar -->
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <a href="index.html">
+                <h2>She<span>Finance</span></h2>
+            </a>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="dashboard.html"><i class="fa-solid fa-house"></i> Overview</a></li>
+            <li><a href="tracker.html"><i class="fa-solid fa-money-bill-transfer"></i> Income & Expense</a></li>
+            <li><a href="budget.html"><i class="fa-solid fa-wallet"></i> Budget Planner</a></li>
+            <li><a href="savings.html"><i class="fa-solid fa-bullseye"></i> Savings Goals</a></li>
+            <li class="active"><a href="chatbot.html"><i class="fa-solid fa-robot"></i> AI Chatbot</a></li>
+            <li><a href="education.html"><i class="fa-solid fa-book-open-reader"></i> Education Hub</a></li>
+            <li><a href="reports.html"><i class="fa-solid fa-chart-pie"></i> Reports</a></li>
+        </ul>
+        <div class="sidebar-bottom">
+            <a href="index.html" class="logout-btn" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i>
+                Logout</a>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="dashboard-main">
+        <!-- Header -->
+        <header class="dashboard-header">
+            <div class="header-title">
+                <h2>SheFinance AI 🤖</h2>
+                <p>Ask anything about budgeting, investments, government schemes, or debt management.</p>
+            </div>
+            <a href="profile.html" class="header-profile-link" title="Click to manage Profile & Settings">
+                <div class="header-profile">
+                    <div class="profile-pic-wrapper">
+                        <img id="profile-img" src="https://ui-avatars.com/api/?name=User&background=c99f55&color=fff"
+                            alt="Profile">
+                        <span class="profile-badge-icon"><i class="fa-solid fa-gear"></i></span>
+                    </div>
+                    <div class="header-user-info">
+                        <span id="user-name" class="user-name">User</span>
+                        <span class="profile-hint-text">Manage Profile <i class="fa-solid fa-chevron-right"></i></span>
+                    </div>
+                </div>
+            </a>
+        </header>
+
+        <!-- Chatbot Main Grid -->
+        <div class="chatbot-wrapper">
+            <!-- Left: Chat History Sidebar -->
+            <div class="chat-history-sidebar">
+                <div class="chat-history-header">
+                    <h3>Chat History</h3>
+                    <button class="new-chat-btn" onclick="startNewChat()" title="New Chat"><i class="fa-solid fa-pen-to-square"></i></button>
+                </div>
+                <div class="chat-history-list" id="chat-history-list">
+                    <!-- History items will be injected here via JS -->
+                </div>
+            </div>
+
+            <!-- Right: Chatbot Component -->
+            <div class="chatbot-card">
+                <div class="chatbot-header">
+                    <div class="chatbot-header-info">
+                        <div class="chatbot-header-icon">
+                            <i class="fa-solid fa-robot"></i>
+                        </div>
+                        <div class="chatbot-header-text">
+                            <h3>SheFinance AI</h3>
+                            <p><span class="status-dot"></span> Online • Intelligent Financial Assistant</p>
+                        </div>
+                    </div>
+                    <div class="chatbot-header-badge">
+                        <span class="btn btn-outline"
+                            style="padding: 4px 12px; font-size: 0.75rem; border-color: rgba(255,255,255,0.4); color: white;">
+                            <i class="fa-solid fa-microchip"></i> AI Powered
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Chat Messages Stream -->
+                <div class="chat-messages" id="chat-messages">
+                    <div class="chat-bubble bot-bubble">
+                        Hello! 👋 I am <strong>SheFinance AI</strong>, your personal intelligent financial advisor.
+                        <br><br>
+                        I can help you with:
+                        <br>• 💡 <strong>Budgeting & 50/30/20 Rule</strong>
+                        <br>• 🏛️ <strong>Government Schemes for Women</strong> (Sukanya Samriddhi, Mudra Loan, Stand-Up
+                        India)
+                        <br>• 🧮 <strong>Financial Math & Formulas</strong> (SIP Returns, EMI Calculator, 50/30/20 Budget
+                        Math)
+                        <br>• 🛡️ <strong>Emergency Funds & Savings Strategy</strong>
+                        <br>• 📈 <strong>Beginner Investments & SIPs</strong>
+                        <br>• ⚡ <strong>Debt Repayment & Credit Score</strong>
+                        <div class="chat-meta"><span>SheFinance AI</span> • <span>Just now</span></div>
+                    </div>
+                </div>
+
+                <!-- Quick Suggested Questions -->
+                <div class="quick-prompts-section">
+                    <div class="quick-prompts-title"><i class="fa-solid fa-sparkles"></i> Suggested Prompts</div>
+                    <div class="quick-prompt-pills" id="quick-prompts">
+                        <button class="prompt-pill" onclick="sendPrompt('Calculate SIP of 5000 for 5 years at 12%')">🧮
+                            Calculate SIP (₹5,000 / 5 yrs)</button>
+                        <button class="prompt-pill"
+                            onclick="sendPrompt('Show 50 30 20 budget math for 50000 salary')">🧮 50/30/20 Budget
+                            (₹50,000)</button>
+                        <button class="prompt-pill"
+                            onclick="sendPrompt('Calculate EMI for 500000 loan at 10.5% for 3 years')">🧮 Calculate EMI
+                            (₹5 Lakh Loan)</button>
+                        <button class="prompt-pill"
+                            onclick="sendPrompt('What government loan schemes exist for women entrepreneurs?')">🏛️
+                            Mudra Loan & Schemes</button>
+                        <button class="prompt-pill"
+                            onclick="sendPrompt('How much money should I keep in an emergency fund?')">🛡️ Emergency
+                            Fund</button>
+                        <button class="prompt-pill"
+                            onclick="sendPrompt('What is a SIP and how do I start investing?')">📈 Beginners
+                            Investment</button>
+                        <button class="prompt-pill"
+                            onclick="sendPrompt('How can a homemaker save money effectively?')">🏠 Homemaker
+                            Savings</button>
+                    </div>
+                </div>
+
+                <!-- Input Field & Send Button -->
+                <form class="chat-input-area" id="chat-form" onsubmit="handleChatSubmit(event)">
+                    <input type="text" id="user-input"
+                        placeholder="Type your financial question here... (e.g. How to save for emergency fund?)"
+                        autocomplete="off">
+                    <button type="submit" class="chat-send-btn" title="Send message">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </form>
+            </div>
+
+
+        </div>
+    </main>
+
+    <script>
+        // API Base Endpoint
+        var FLASK_API_URL = "http://127.0.0.1:5000/api/chatbot";
+
+        document.addEventListener("DOMContentLoaded", function () {
+            // Load user credentials
+            var storedName = localStorage.getItem('userName');
+            var userName = storedName || (function () {
+                var email = localStorage.getItem('userEmail') || '';
+                var raw = email.split('@')[0].replace(/[._]/g, ' ');
+                return raw ? raw.charAt(0).toUpperCase() + raw.slice(1) : 'User';
+            })();
+
+            if (userName) {
+                var formattedName = userName.split(' ').map(function (w) { return w.charAt(0).toUpperCase() + w.slice(1); }).join(' ');
+                var nameSpan = document.getElementById('user-name');
+                if (nameSpan) { nameSpan.innerText = formattedName; }
+
+                var savedAvatar = localStorage.getItem('userAvatar');
+                if (savedAvatar) {
+                    document.getElementById('profile-img').src = savedAvatar;
+                } else {
+                    document.getElementById('profile-img').src = "https://ui-avatars.com/api/?name=" + encodeURIComponent(formattedName) + "&background=c99f55&color=fff";
+                }
+            }
+
+            // Display stored occupation persona in ML card
+            var profileData = {};
+            try {
+                profileData = JSON.parse(localStorage.getItem('userProfile') || '{}');
+            } catch (e) { }
+            var occ = profileData.occupation || 'salaried';
+            document.getElementById('persona-occ')?.appendChild(document.createTextNode('')); // Fallback since we removed the element
+            
+            // Load History Sidebar
+            renderHistory();
+        });
+
+        function saveToHistory(message) {
+            let history = JSON.parse(localStorage.getItem('chatHistory') || '[]');
+            // Create a short title
+            let title = message.length > 25 ? message.substring(0, 25) + "..." : message;
+            // Only add if it's the first message of the session or the array is empty
+            if (history.length === 0 || history[0].session !== sessionStorage.getItem('currentSession')) {
+                let session = sessionStorage.getItem('currentSession') || Date.now().toString();
+                sessionStorage.setItem('currentSession', session);
+                history.unshift({ title: title, session: session });
+                // Keep only last 10
+                if(history.length > 10) history.pop();
+                localStorage.setItem('chatHistory', JSON.stringify(history));
+                renderHistory();
+            }
+        }
+
+        function renderHistory() {
+            let history = JSON.parse(localStorage.getItem('chatHistory') || '[]');
+            let list = document.getElementById('chat-history-list');
+            if (!list) return;
+            
+            if (history.length === 0) {
+                list.innerHTML = '<p style="color:#a0b2bd; font-size:0.8rem; padding: 10px;">No history yet</p>';
+                return;
+            }
+            
+            let html = '';
+            history.forEach(item => {
+                html += `<button class="chat-history-item" title="${item.title}">
+                            <i class="fa-regular fa-message"></i>
+                            ${item.title}
+                         </button>`;
+            });
+            list.innerHTML = html;
+        }
+
+        function startNewChat() {
+            sessionStorage.removeItem('currentSession');
+            document.getElementById('chat-messages').innerHTML = `
+                <div class="chat-bubble bot-bubble">
+                    Hello! 👋 I am <strong>SheFinance AI</strong>, your personal intelligent financial advisor.
+                    <br><br>
+                    I can help you with:
+                    <br>• 💡 <strong>Budgeting & 50/30/20 Rule</strong>
+                    <br>• 🏛️ <strong>Government Schemes for Women</strong> (Sukanya Samriddhi, Mudra Loan, Stand-Up India)
+                    <br>• 🧮 <strong>Financial Math & Formulas</strong> (SIP Returns, EMI Calculator, 50/30/20 Budget Math)
+                    <br>• 🛡️ <strong>Emergency Funds & Savings Strategy</strong>
+                    <br>• 📈 <strong>Beginner Investments & SIPs</strong>
+                    <br>• ⚡ <strong>Debt Repayment & Credit Score</strong>
+                    <div class="chat-meta"><span>SheFinance AI</span> • <span>Just now</span></div>
+                </div>
+            `;
+            // Reset pills
+            document.getElementById('quick-prompts').innerHTML = `
+                <button class="prompt-pill" onclick="sendPrompt('Calculate SIP of 5000 for 5 years at 12%')">🧮 Calculate SIP (₹5,000 / 5 yrs)</button>
+                <button class="prompt-pill" onclick="sendPrompt('Show 50 30 20 budget math for 50000 salary')">🧮 50/30/20 Budget (₹50,000)</button>
+                <button class="prompt-pill" onclick="sendPrompt('Calculate EMI for 500000 loan at 10.5% for 3 years')">🧮 Calculate EMI (₹5 Lakh Loan)</button>
+                <button class="prompt-pill" onclick="sendPrompt('What government loan schemes exist for women entrepreneurs?')">🏛️ Mudra Loan & Schemes</button>
+                <button class="prompt-pill" onclick="sendPrompt('How much money should I keep in an emergency fund?')">🛡️ Emergency Fund</button>
+            `;
+        }
+
+        function handleChatSubmit(e) {
+            e.preventDefault();
+            var inputEl = document.getElementById('user-input');
+            var message = inputEl.value.trim();
+            if (!message) return;
+
+            inputEl.value = '';
+            saveToHistory(message);
+            appendUserMessage(message);
+            showTypingIndicator();
+            queryMLChatbot(message);
+        }
+
+        function sendPrompt(promptText) {
+            saveToHistory(promptText);
+            appendUserMessage(promptText);
+            showTypingIndicator();
+            queryMLChatbot(promptText);
+        }
+
+        function appendUserMessage(msgText) {
+            var chatBox = document.getElementById('chat-messages');
+            var userDiv = document.createElement('div');
+            userDiv.className = 'chat-bubble user-bubble';
+            var now = new Date();
+            var timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            userDiv.innerHTML = escapeHtml(msgText) + `<div class="chat-meta"><span>You</span> • <span>${timeStr}</span></div>`;
+            chatBox.appendChild(userDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function showTypingIndicator() {
+            var chatBox = document.getElementById('chat-messages');
+            var typingDiv = document.createElement('div');
+            typingDiv.id = 'typing-indicator';
+            typingDiv.className = 'chat-bubble bot-bubble';
+            typingDiv.innerHTML = `<i class="fa-solid fa-robot fa-spin" style="color: var(--secondary-color);"></i> SheFinance AI is analyzing your question...`;
+            chatBox.appendChild(typingDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function removeTypingIndicator() {
+            var typingEl = document.getElementById('typing-indicator');
+            if (typingEl) {
+                typingEl.remove();
+            }
+        }
+
+        function configureGrokKey() {
+            var currentKey = localStorage.getItem('grok_api_key') || '';
+            var key = prompt("Enter your xAI Grok API Key (e.g. xai-xxx) to enable direct Grok AI answers (like Gemini/ChatGPT):", currentKey);
+            if (key !== null) {
+                key = key.trim();
+                if (key) {
+                    localStorage.setItem('grok_api_key', key);
+                    alert("✅ Grok API Key saved! All your questions will now be answered directly by Grok AI!");
+                } else {
+                    localStorage.removeItem('grok_api_key');
+                    alert("Grok API Key cleared. Chatbot will use internal ML & Math Engine.");
+                }
+                updateGrokKeyUI();
+            }
+        }
+
+        function updateGrokKeyUI() {
+            var key = localStorage.getItem('grok_api_key');
+            var btn = document.getElementById('grok-key-btn');
+            var txt = document.getElementById('grok-badge-text');
+            if (btn && txt) {
+                if (key) {
+                    txt.textContent = 'Grok AI Active 🟢';
+                    btn.style.borderColor = '#2ecc71';
+                    btn.style.color = '#2ecc71';
+                } else {
+                    txt.textContent = 'Set Grok API Key';
+                    btn.style.borderColor = 'rgba(255,255,255,0.4)';
+                    btn.style.color = 'white';
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            updateGrokKeyUI();
+        });
+
+        function queryMLChatbot(userMessage) {
+            var profileData = {};
+            try {
+                profileData = JSON.parse(localStorage.getItem('userProfile') || '{}');
+            } catch (e) { }
+
+            var grokKey = localStorage.getItem('grok_api_key') || '';
+
+            fetch(FLASK_API_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    message: userMessage,
+                    user_profile: profileData,
+                    grok_api_key: grokKey
+                })
+            })
+                .then(function (res) { return res.json(); })
+                .then(function (data) {
+                    removeTypingIndicator();
+                    if (data.status === "success") {
+                        appendBotMessage(data.reply, data.suggested_questions);
+                    } else {
+                        useFallbackML(userMessage);
+                    }
+                })
+                .catch(function (err) {
+                    console.log("Flask ML endpoint offline or loading, engaging fallback ML model:", err);
+                    removeTypingIndicator();
+                    useFallbackML(userMessage);
+                });
+        }
+
+        function appendBotMessage(replyText, suggestions) {
+            var chatBox = document.getElementById('chat-messages');
+            var botDiv = document.createElement('div');
+            botDiv.className = 'chat-bubble bot-bubble';
+            var now = new Date();
+            var timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            // Format markdown-like bold, LaTeX math blocks, and bullet points
+            var formattedReply = replyText
+                .replace(/\$\$(.*?)\$\$/g, '<div class="math-equation-box">📐 <code>$1</code></div>')
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\n/g, '<br>');
+
+            botDiv.innerHTML = formattedReply + `<div class="chat-meta"><span>SheFinance AI</span> • <span>${timeStr}</span></div>`;
+            chatBox.appendChild(botDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            // Render updated suggestion pills if provided
+            if (suggestions && suggestions.length > 0) {
+                var pillsContainer = document.getElementById('quick-prompts');
+                var pillsHtml = '';
+                suggestions.forEach(function (s) {
+                    pillsHtml += `<button class="prompt-pill" onclick="sendPrompt('${escapeHtml(s)}')">${escapeHtml(s)}</button>`;
+                });
+                pillsContainer.innerHTML = pillsHtml;
+            }
+        }
+
+        // Client-Side Fallback NLP Engine (JS-based similarity match when Flask server is offline)
+        function useFallbackML(userMessage) {
+            var q = userMessage.lowerCase ? userMessage.lowerCase() : userMessage.toLowerCase();
+            var reply = "";
+            var intent = "general_advice";
+            var confidence = 0.85;
+
+            if (q.includes("budget") || q.includes("rule") || q.includes("spend")) {
+                intent = "budgeting_advice";
+                reply = "💡 **Smart Budgeting Tip (50/30/20 Rule):**\n• **50% Needs:** Essential bills & groceries.\n• **30% Wants:** Entertainment & shopping.\n• **20% Savings:** Emergency fund & investments.\n\nUse our **Budget Planner** tab to track your category limits!";
+            } else if (q.includes("scheme") || q.includes("mudra") || q.includes("sukanya") || q.includes("loan") || q.includes("govt")) {
+                intent = "government_schemes";
+                reply = "🏛️ **Top Schemes for Women:**\n1. **Sukanya Samriddhi Yojana (SSY):** High interest for girl child education.\n2. **Mudra Yojana for Women:** Collateral-free business loans up to ₹10 Lakhs.\n3. **Mahila Samman Certificate:** High-yield fixed savings for women.";
+            } else if (q.includes("emergency") || q.includes("rainy") || q.includes("reserve")) {
+                intent = "emergency_fund";
+                reply = "🛡️ **Emergency Fund Advice:** Keep **3 to 6 months of expenses** in liquid savings accounts or short-term liquid FDs before investing in risky assets.";
+            } else if (q.includes("invest") || q.includes("sip") || q.includes("mutual") || q.includes("stock") || q.includes("gold")) {
+                intent = "investments_basics";
+                reply = "📈 **Investment Roadmap:** Start with low-risk Public Provident Fund (PPF) or monthly SIPs in index mutual funds starting at ₹500/month!";
+            } else if (q.includes("debt") || q.includes("emi") || q.includes("card") || q.includes("pay off")) {
+                intent = "debt_management";
+                reply = "⚡ **Debt Repayment:** Use the **Debt Avalanche** method by clearing high-interest credit card debt first to save maximum money!";
+            } else {
+                intent = "general_assistance";
+                confidence = 0.65;
+                reply = "Hello! I am **SheFinance AI**. I can answer questions about budgeting, emergency funds, SIP investments, government loans, and tax planning!";
+            }
+
+            appendBotMessage(reply, ["How to budget?", "Mudra Loan", "Emergency Fund"]);
+        }
+
+        function escapeHtml(text) {
+            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        function logout() {
+            localStorage.removeItem('userName');
+            localStorage.removeItem('userEmail');
+            localStorage.removeItem('userAvatar');
+            localStorage.removeItem('userProfile');
+        }
+    </script>
+</body>
+
+</html>

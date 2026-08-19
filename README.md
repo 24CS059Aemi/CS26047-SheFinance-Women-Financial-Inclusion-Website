@@ -37,11 +37,48 @@ Many women face challenges in managing their personal finances due to limited fi
 ## 3. Proposed Solution & Architecture
 
 ### 3.1 Technology Stack
-*   **Frontend:** HTML5, CSS3, JavaScript (React.js for advanced UI rendering)
-*   **Backend:** Node.js + Express.js
-*   **Database:** MySQL (for persistent secure storage of user accounts and transactions)
-*   **AI Module:** Machine Learning models for savings predictions and NLP for AI Chatbot
+*   **Frontend:** HTML5, CSS3, Vanilla JavaScript (Modern Glassmorphic Responsive Dashboard)
+*   **Backend:** Python Flask ML API (`app.py` on Port 5000) & Node.js Express Server (`server.js` on Port 3000)
+*   **Machine Learning Library:** Scikit-Learn (TF-IDF Vectorizer, Multinomial Naive Bayes Classifier, k-NN Regressor, Linear Regression)
+*   **Database & Storage:** Client-side HTML5 LocalStorage & Session persistence
 *   **Tools:** VS Code, Git, GitHub for version control
+
+### 3.2 AI Financial Chatbot & Machine Learning Pipeline
+SheFinance features a step-by-step Supervised NLP Machine Learning Chatbot designed specifically for women's financial literacy:
+
+1. **Step 1: Text Preprocessing & Tokenization**
+   • Lowercasing, regex special character stripping, and whitespace standardization.
+
+2. **Step 2: Feature Extraction (TF-IDF Vectorization)**
+   • Uses Scikit-Learn `TfidfVectorizer(ngram_range=(1, 2))` to extract unigrams and bigrams from user financial queries.
+
+3. **Step 3: Intent Classification Model (Multinomial Naive Bayes)**
+   • Classifies query into 11 distinct intent categories (`budgeting_advice`, `government_schemes`, `emergency_fund`, `investments_basics`, `savings_strategies`, `debt_management`, `financial_health_score`, `homemaker_finance`, `student_finance`, `tax_planning`, `greeting`).
+
+4. **Step 4: Cosine Similarity Verification & Fallback**
+   • Calculates cosine similarity scores against training patterns to refine prediction confidence and handle ambiguous phrasing safely.
+
+5. **Step 5: Dynamic Persona-based Context Customization**
+   • Customizes responses dynamically based on user persona (`occupation`: Student, Homemaker, Working Professional, Entrepreneur).
+
+6. **API Endpoint (`POST /api/chatbot`)**
+   ```json
+   {
+     "message": "What government loan schemes exist for female entrepreneurs?",
+     "user_profile": { "occupation": "business" }
+   }
+   ```
+   **Returns:**
+   ```json
+   {
+     "status": "success",
+     "reply": "🏛️ Top Government Financial Schemes for Women:...",
+     "intent": "government_schemes",
+     "confidence": 0.54,
+     "algorithm": "Multinomial Naive Bayes + TF-IDF Vectorizer",
+     "suggested_questions": ["Tell me about Mudra Loan", "What is Sukanya Samriddhi?"]
+   }
+   ```
 
 ---
 
