@@ -136,8 +136,10 @@
                 var name = payload.name || email.split('@')[0];
 
                 var users = getUsers();
-                var user = users.find(function (u) { return u.email === email; });
-                var role = user && user.role ? user.role : 'user';
+                if (user && user.status === 'blocked') {
+                    alert('Your account has been suspended by an Administrator. Please contact support.');
+                    return;
+                }
 
                 if (role !== 'admin' && localStorage.getItem('maintenanceMode') === 'true') {
                     alert('Site is currently down for maintenance. Please check back later.');
