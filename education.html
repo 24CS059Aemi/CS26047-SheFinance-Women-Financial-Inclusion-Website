@@ -675,28 +675,22 @@
                     html += `<div class="topic-link" id="link-${topic.id}" onclick="loadArticle('${topic.id}')">${topicIconHtml} <span>${topic.title}</span></div>`;
                 });
 
+                // If this is the Government Schemes level, seamlessly attach the Live CMS Schemes Directory!
+                if (levelObj.level.includes("Government Schemes") || levelObj.level.includes("Level 5")) {
+                    var liveSchemesTopic = {
+                        id: 'govt-schemes',
+                        title: '6. Live Curated Schemes Directory',
+                        icon: 'fa-solid fa-landmark',
+                        content: buildLiveSchemesContent()
+                    };
+                    flatTopics.push(liveSchemesTopic);
+                    html += `<div class="topic-link" id="link-govt-schemes" onclick="loadArticle('govt-schemes')"><i class="fa-solid fa-landmark"></i> <span>6. Live Curated Schemes Directory</span></div>`;
+                }
+
                 html += `</div>`;
             });
 
-            // 2. Dynamic Live Government Schemes (From Admin Schemes CMS)
-            var liveSchemesTopic = {
-                id: 'govt-schemes',
-                title: 'Live Government Schemes Directory',
-                icon: 'fa-solid fa-landmark',
-                content: buildLiveSchemesContent()
-            };
-            flatTopics.push(liveSchemesTopic);
-
-            html += `
-                <div class="level-group">
-                    <div class="level-title"><i class="fa-solid fa-landmark"></i> <span>Government Schemes Directory</span></div>
-                    <div class="topic-link" id="link-govt-schemes" onclick="loadArticle('govt-schemes')">
-                        <i class="fa-solid fa-landmark"></i> <span>Live Government Schemes Directory</span>
-                    </div>
-                </div>
-            `;
-
-            // 3. Dynamic Learning Guides (From Admin Literacy CMS)
+            // 2. Dynamic Learning Guides (From Admin Literacy CMS)
             var adminGuides = getAdminLiteracy();
             if (adminGuides.length > 0) {
                 html += `
