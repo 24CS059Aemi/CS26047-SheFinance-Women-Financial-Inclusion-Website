@@ -59,6 +59,12 @@
             </a>
         </header>
 
+        <!-- Global Announcement Banner -->
+        <div id="global-announcement-banner" style="display:none; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: #fff; padding: 14px 25px; border-radius: 12px; margin: 0 40px 25px; font-weight: 500; font-size: 0.95rem; box-shadow: 0 6px 15px rgba(0,0,0,0.1); align-items: center; justify-content: space-between;">
+            <div style="display:flex; align-items:center; gap: 12px;"><i class="fa-solid fa-bullhorn" style="font-size: 1.2rem; color: #fff;"></i> <span id="global-announcement-text"></span></div>
+            <i class="fa-solid fa-xmark" style="cursor: pointer; opacity: 0.8; padding:5px;" onclick="this.parentElement.style.display='none'" title="Dismiss"></i>
+        </div>
+
         <!-- Dashboard Content -->
         <section class="dashboard-content">
             <!-- Summary Cards -->
@@ -131,6 +137,16 @@
 
             // Load live dashboard metrics
             loadDashboardData();
+
+            // Load Global Announcement
+            var ann = localStorage.getItem('globalAnnouncement');
+            if (ann) {
+                var banner = document.getElementById('global-announcement-banner');
+                if (banner) {
+                    document.getElementById('global-announcement-text').textContent = ann;
+                    banner.style.display = 'flex';
+                }
+            }
         });
 
         function getTransactions() { try { return JSON.parse(localStorage.getItem('sheFinanceTransactions') || '[]'); } catch (e) { return []; } }

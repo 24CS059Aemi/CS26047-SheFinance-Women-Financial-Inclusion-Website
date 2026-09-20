@@ -132,8 +132,10 @@ import urllib.parse
 import json
 import os
 
+GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
+
 def call_grok_api(prompt_text, user_profile=None, custom_api_key=None):
-    api_key = custom_api_key or os.environ.get("GROQ_API_KEY")
+    api_key = custom_api_key or GROQ_API_KEY
     if not api_key:
         return None
 

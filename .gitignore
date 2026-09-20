@@ -6,3 +6,7 @@ node_modules/
 
 # Logs
 npm-debug.log*
+
+# Python
+__pycache__/
+*.pyc

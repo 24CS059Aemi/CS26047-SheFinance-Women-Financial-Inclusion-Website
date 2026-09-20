@@ -66,7 +66,8 @@
             <div class="chat-history-sidebar">
                 <div class="chat-history-header">
                     <h3>Chat History</h3>
-                    <button class="new-chat-btn" onclick="startNewChat()" title="New Chat"><i class="fa-solid fa-pen-to-square"></i></button>
+                    <button class="new-chat-btn" onclick="startNewChat()" title="New Chat"><i
+                            class="fa-solid fa-pen-to-square"></i></button>
                 </div>
                 <div class="chat-history-list" id="chat-history-list">
                     <!-- History items will be injected here via JS -->
@@ -102,7 +103,8 @@
                         <br>• 💡 <strong>Budgeting & 50/30/20 Rule</strong>
                         <br>• 🏛️ <strong>Government Schemes for Women</strong> (Sukanya Samriddhi, Mudra Loan, Stand-Up
                         India)
-                        <br>• 🧮 <strong>Financial Math & Formulas</strong> (SIP Returns, EMI Calculator, 50/30/20 Budget
+                        <br>• 🧮 <strong>Financial Math & Formulas</strong> (SIP Returns, EMI Calculator, 50/30/20
+                        Budget
                         Math)
                         <br>• 🛡️ <strong>Emergency Funds & Savings Strategy</strong>
                         <br>• 📈 <strong>Beginner Investments & SIPs</strong>
@@ -186,24 +188,47 @@
             } catch (e) { }
             var occ = profileData.occupation || 'salaried';
             document.getElementById('persona-occ')?.appendChild(document.createTextNode('')); // Fallback since we removed the element
-            
+
             // Load History Sidebar
             renderHistory();
+
+            // Restore current session if page was refreshed
+            let activeSession = sessionStorage.getItem('currentSession');
+            if (activeSession) {
+                loadHistory(activeSession);
+            }
         });
 
         function saveToHistory(message) {
             let history = JSON.parse(localStorage.getItem('chatHistory') || '[]');
-            // Create a short title
             let title = message.length > 25 ? message.substring(0, 25) + "..." : message;
-            // Only add if it's the first message of the session or the array is empty
+
             if (history.length === 0 || history[0].session !== sessionStorage.getItem('currentSession')) {
                 let session = sessionStorage.getItem('currentSession') || Date.now().toString();
                 sessionStorage.setItem('currentSession', session);
                 history.unshift({ title: title, session: session });
-                // Keep only last 10
-                if(history.length > 10) history.pop();
+                if (history.length > 10) history.pop();
                 localStorage.setItem('chatHistory', JSON.stringify(history));
                 renderHistory();
+            }
+            saveSessionHtml();
+        }
+
+        function saveSessionHtml() {
+            let session = sessionStorage.getItem('currentSession');
+            if (session) {
+                let html = document.getElementById('chat-messages').innerHTML;
+                localStorage.setItem('chat_html_' + session, html);
+            }
+        }
+
+        function loadHistory(session) {
+            let html = localStorage.getItem('chat_html_' + session);
+            if (html) {
+                sessionStorage.setItem('currentSession', session);
+                document.getElementById('chat-messages').innerHTML = html;
+                var chatBox = document.getElementById('chat-messages');
+                chatBox.scrollTop = chatBox.scrollHeight;
             }
         }
 
@@ -211,17 +236,18 @@
             let history = JSON.parse(localStorage.getItem('chatHistory') || '[]');
             let list = document.getElementById('chat-history-list');
             if (!list) return;
-            
+
             if (history.length === 0) {
                 list.innerHTML = '<p style="color:#a0b2bd; font-size:0.8rem; padding: 10px;">No history yet</p>';
                 return;
             }
-            
+
             let html = '';
             history.forEach(item => {
-                html += `<button class="chat-history-item" title="${item.title}">
+                let safeTitle = escapeHtml(item.title);
+                html += `<button class="chat-history-item" title="${safeTitle}" onclick="loadHistory('${item.session}')">
                             <i class="fa-regular fa-message"></i>
-                            ${item.title}
+                            ${safeTitle}
                          </button>`;
             });
             list.innerHTML = html;
@@ -283,6 +309,7 @@
             userDiv.innerHTML = escapeHtml(msgText) + `<div class="chat-meta"><span>You</span> • <span>${timeStr}</span></div>`;
             chatBox.appendChild(userDiv);
             chatBox.scrollTop = chatBox.scrollHeight;
+            saveSessionHtml();
         }
 
         function showTypingIndicator() {
@@ -388,6 +415,7 @@
             botDiv.innerHTML = formattedReply + `<div class="chat-meta"><span>SheFinance AI</span> • <span>${timeStr}</span></div>`;
             chatBox.appendChild(botDiv);
             chatBox.scrollTop = chatBox.scrollHeight;
+            saveSessionHtml();
 
             // Render updated suggestion pills if provided
             if (suggestions && suggestions.length > 0) {
@@ -441,6 +469,12 @@
             localStorage.removeItem('userAvatar');
             localStorage.removeItem('userProfile');
         }
+    </script>
+    <script>
+        window.addEventListener('scroll', function () {
+            var s = document.querySelector('.sidebar');
+            if (s) { s.classList.toggle('scrolled', window.scrollY > 10); }
+        });
     </script>
 </body>
 

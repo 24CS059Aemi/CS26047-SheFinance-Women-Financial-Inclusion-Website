@@ -101,6 +101,26 @@ ul {
     position: sticky;
     top: 0;
     z-index: 100;
+    transition: all 0.35s ease;
+}
+
+/* Navbar scroll effect — shrinks & gets glass look */
+.navbar.scrolled {
+    padding: 10px 0;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 4px 24px rgba(27, 54, 68, 0.12);
+}
+
+.navbar.scrolled .logo h2 {
+    font-size: 1.6rem;
+    transition: font-size 0.35s ease;
+}
+
+/* ===== Sidebar scrolled effect ===== */
+.sidebar.scrolled {
+    box-shadow: 4px 0 24px rgba(27, 54, 68, 0.13);
 }
 
 .nav-container {
@@ -577,13 +597,16 @@ footer {
     position: sticky;
     top: 0;
     z-index: 1000;
-    transition: box-shadow 0.3s ease, background-color 0.3s ease;
+    transition: box-shadow 0.3s ease, background-color 0.3s ease, height 0.3s ease, min-height 0.3s ease;
 }
 /* When user scrolls down, navbar gets stronger shadow */
 .sidebar.scrolled {
-    box-shadow: 0 6px 30px rgba(0,0,0,0.25);
-    background-color: #142b37;
-    backdrop-filter: blur(10px);
+    height: 58px;
+    min-height: 58px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+    background-color: rgba(14, 35, 44, 0.97);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
 }
 .sidebar-logo {
     padding: 0 20px;
@@ -615,8 +638,19 @@ footer {
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
 }
+/* Thin styled scrollbar for nav */
 .sidebar-menu::-webkit-scrollbar {
-    display: none;
+    height: 3px;
+}
+.sidebar-menu::-webkit-scrollbar-track {
+    background: transparent;
+}
+.sidebar-menu::-webkit-scrollbar-thumb {
+    background: var(--secondary-color);
+    border-radius: 10px;
+}
+.sidebar-menu::-webkit-scrollbar-thumb:hover {
+    background: #e0b96a;
 }
 .sidebar-menu li {
     display: inline-flex;

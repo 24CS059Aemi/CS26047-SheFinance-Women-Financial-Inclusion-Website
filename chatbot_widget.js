@@ -156,3 +156,71 @@
         return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
     }
 })();
+
+/* ===== Sidebar Nav Scroll Arrows ===== */
+(function () {
+    document.addEventListener('DOMContentLoaded', function () {
+        var menu = document.querySelector('.sidebar-menu');
+        var sidebar = document.querySelector('.sidebar');
+        if (!menu || !sidebar) return;
+
+        // Create left arrow button
+        var btnLeft = document.createElement('button');
+        btnLeft.innerHTML = '<i class="fa-solid fa-chevron-left"></i>';
+        btnLeft.className = 'nav-scroll-btn nav-scroll-left';
+        btnLeft.title = 'Scroll left';
+
+        // Create right arrow button
+        var btnRight = document.createElement('button');
+        btnRight.innerHTML = '<i class="fa-solid fa-chevron-right"></i>';
+        btnRight.className = 'nav-scroll-btn nav-scroll-right';
+        btnRight.title = 'Scroll right';
+
+        // Inject styles
+        var style = document.createElement('style');
+        style.textContent = `
+            .nav-scroll-btn {
+                background: rgba(255,255,255,0.08);
+                border: none;
+                color: #c99f55;
+                cursor: pointer;
+                padding: 6px 10px;
+                border-radius: 6px;
+                font-size: 0.85rem;
+                flex-shrink: 0;
+                transition: background 0.2s ease, transform 0.2s ease;
+                display: none;
+            }
+            .nav-scroll-btn:hover {
+                background: rgba(201,159,85,0.2);
+                transform: scale(1.1);
+            }
+            .nav-scroll-btn.visible { display: flex; align-items: center; }
+        `;
+        document.head.appendChild(style);
+
+        // Insert arrows into sidebar around the menu
+        sidebar.insertBefore(btnLeft, menu);
+        sidebar.insertBefore(btnRight, menu.nextSibling);
+
+        // Show/hide arrows based on scroll position
+        function updateArrows() {
+            var canScrollLeft = menu.scrollLeft > 5;
+            var canScrollRight = menu.scrollLeft < (menu.scrollWidth - menu.clientWidth - 5);
+            btnLeft.classList.toggle('visible', canScrollLeft);
+            btnRight.classList.toggle('visible', canScrollRight);
+        }
+
+        // Scroll on click
+        btnLeft.addEventListener('click', function () {
+            menu.scrollBy({ left: -160, behavior: 'smooth' });
+        });
+        btnRight.addEventListener('click', function () {
+            menu.scrollBy({ left: 160, behavior: 'smooth' });
+        });
+
+        menu.addEventListener('scroll', updateArrows);
+        window.addEventListener('resize', updateArrows);
+        updateArrows();
+    });
+})();
