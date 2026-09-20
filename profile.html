@@ -520,5 +520,11 @@
             localStorage.removeItem('userProfile');
         }
     </script>
+    <script>
+        window.addEventListener('scroll', function () {
+            var s = document.querySelector('.sidebar');
+            if (s) { s.classList.toggle('scrolled', window.scrollY > 10); }
+        });
+    </script>
 </body>
 </html>

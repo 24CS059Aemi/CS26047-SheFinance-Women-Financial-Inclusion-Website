@@ -39,6 +39,15 @@
                 </div>
             </div>
 
+            <div class="input-group">
+                <label for="role">Login As</label>
+                <select id="role" required
+                    style="padding: 14px 20px; border: 1px solid rgba(0, 0, 0, 0.1); border-radius: 12px; font-family: 'Outfit', sans-serif; font-size: 0.95rem; width: 100%; box-sizing: border-box; outline: none; transition: all 0.3s ease; background: #fff;">
+                    <option value="user">Women Student / General User</option>
+                    <option value="admin">System Administrator</option>
+                </select>
+            </div>
+
             <button type="submit" class="btn btn-primary">Sign In</button>
 
             <div class="divider"><span>OR</span></div>
@@ -69,22 +78,23 @@
                     var base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
                     while (base64.length % 4) base64 += '=';
                     return JSON.parse(atob(base64));
-                } catch(e) { return null; }
+                } catch (e) { return null; }
             }
 
             // Get registered users from localStorage
             function getUsers() {
-                try { return JSON.parse(localStorage.getItem('registeredUsers') || '[]'); } catch(e) { return []; }
+                try { return JSON.parse(localStorage.getItem('registeredUsers') || '[]'); } catch (e) { return []; }
             }
 
             // ---- Email / Password Login ----
             function handleEmailLogin(event) {
                 event.preventDefault();
-                var email    = document.getElementById('email').value.trim().toLowerCase();
+                var email = document.getElementById('email').value.trim().toLowerCase();
                 var password = document.getElementById('password').value;
+                var role = document.getElementById('role').value;
 
                 var users = getUsers();
-                var user  = users.find(function(u) { return u.email === email; });
+                var user = users.find(function (u) { return u.email === email; });
 
                 if (!user) {
                     alert('No account found with this email.\nPlease register first.');
@@ -98,10 +108,23 @@
                     alert('Incorrect password. Please try again.');
                     return;
                 }
+                var registeredRole = user.role || 'user';
+                if (registeredRole !== role) {
+                    alert('Access Denied. You are not registered as an ' + role.toUpperCase() + '.');
+                    return;
+                }
+                if (user.status === 'blocked') {
+                    alert('Your account has been suspended by an Administrator. Please contact support.');
+                    return;
+                }
+                if (role !== 'admin' && localStorage.getItem('maintenanceMode') === 'true') {
+                    alert('Site is currently down for maintenance. Please check back later.');
+                    return;
+                }
 
                 // Login successful (User Role)
-                localStorage.setItem('userRole', 'user');
-                sessionStart(user.name, user.email);
+                localStorage.setItem('userRole', role);
+                sessionStart(user.name, user.email, role);
             }
 
             // ---- Google Login (auto-register + login) ----
@@ -110,10 +133,16 @@
                 if (!payload) { alert('Google sign-in failed. Please try again.'); return; }
 
                 var email = payload.email.toLowerCase();
-                var name  = payload.name || email.split('@')[0];
+                var name = payload.name || email.split('@')[0];
 
                 var users = getUsers();
-                var user  = users.find(function(u) { return u.email === email; });
+                var user = users.find(function (u) { return u.email === email; });
+                var role = user && user.role ? user.role : 'user';
+
+                if (role !== 'admin' && localStorage.getItem('maintenanceMode') === 'true') {
+                    alert('Site is currently down for maintenance. Please check back later.');
+                    return;
+                }
 
                 var isNewRegistration = false;
                 if (!user) {
@@ -131,8 +160,8 @@
                     await fetch('http://localhost:3000/api/google-login', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ 
-                            credential: response.credential, 
+                        body: JSON.stringify({
+                            credential: response.credential,
                             isRegister: isNewRegistration
                         })
                     });
@@ -147,9 +176,9 @@
                         localStorage.removeItem('userProfile');
                         localStorage.removeItem('userAvatar');
                     }
-                    localStorage.setItem('userName',  name);
+                    localStorage.setItem('userName', name);
                     localStorage.setItem('userEmail', email);
-                    
+
                     alert('Registration successful via Google! Welcome to SheFinance.');
                     window.location.href = 'onboarding.html';
                 } else {
@@ -158,15 +187,22 @@
             }
 
             // ---- Start session and go to dashboard ----
-            function sessionStart(name, email) {
+            function sessionStart(name, email, role) {
                 var prevEmail = localStorage.getItem('userEmail');
                 if (prevEmail && prevEmail !== email) {
                     localStorage.removeItem('userProfile');
                     localStorage.removeItem('userAvatar');
                 }
-                localStorage.setItem('userName',  name);
+                localStorage.setItem('userName', name);
                 localStorage.setItem('userEmail', email);
-                window.location.href = 'dashboard.html';
+                if (role) localStorage.setItem('userRole', role);
+                else role = localStorage.getItem('userRole') || 'user';
+
+                if (role === 'admin') {
+                    window.location.href = 'admin.html';
+                } else {
+                    window.location.href = 'dashboard.html';
+                }
             }
 
             function togglePassword(inputId, icon) {
