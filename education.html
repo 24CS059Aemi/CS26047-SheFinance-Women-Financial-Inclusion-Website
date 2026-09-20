@@ -511,11 +511,18 @@
             </a>
         </div>
 
+        <!-- Global Announcement Banner -->
+        <div id="announcement-banner" style="display:none;background:linear-gradient(90deg,#c99f55,#e0b96a);color:#1b3644;padding:12px 20px;border-radius:10px;margin-bottom:20px;font-weight:600;align-items:center;gap:10px;box-shadow:0 4px 12px rgba(201,159,85,0.2);">
+            <i class="fa-solid fa-bullhorn" style="font-size:1.1rem;"></i>
+            <span id="announcement-text" style="flex:1;"></span>
+            <i class="fa-solid fa-xmark" style="cursor:pointer;opacity:0.7;" onclick="this.parentElement.style.display='none'"></i>
+        </div>
+
         <div class="education-layout">
             <!-- Left Side Topics Navigation -->
             <aside class="education-sidebar">
                 <div id="topics-menu">
-                    <!-- Dynamic rendering from education_data.js -->
+                    <!-- Dynamic rendering from education_data.js and Admin CMS -->
                 </div>
             </aside>
 
@@ -548,11 +555,20 @@
             document.getElementById('displayUserName').innerText = userName;
             document.getElementById('navAvatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=c99f55&color=fff`;
 
+            // Global Announcement
+            const ann = localStorage.getItem('globalAnnouncement');
+            if (ann) {
+                document.getElementById('announcement-text').textContent = ann;
+                document.getElementById('announcement-banner').style.display = 'flex';
+            }
+
             renderMenu();
 
-
-            // Load first article by default
-            if (flatTopics.length > 0) {
+            // Check URL hash or load first article by default
+            var hash = window.location.hash.replace('#', '');
+            if (hash && flatTopics.some(t => t.id === hash)) {
+                loadArticle(hash);
+            } else if (flatTopics.length > 0) {
                 loadArticle(flatTopics[0].id);
             }
         });
@@ -564,11 +580,88 @@
 
         let flatTopics = [];
 
+        function getAdminSchemes() {
+            var DEFAULT_SCHEMES = [
+                { id: 1, name: 'Mahila Samman Savings Certificate', cat: 'Savings', benefit: '7.5% Fixed Interest p.a.', eligibility: 'Women of any age (Tenure 2 yrs)', status: 'active', link: 'https://www.indiapost.gov.in' },
+                { id: 2, name: 'Pradhan Mantri Mudra Yojana (PMMY)', cat: 'Business Loan', benefit: 'Collateral-free loan up to ₹10 Lakhs', eligibility: 'Women Entrepreneurs & Small Businesses', status: 'active', link: 'https://www.mudra.org.in' },
+                { id: 3, name: 'Sukanya Samriddhi Yojana (SSY)', cat: 'Girl Child', benefit: '8.2% Tax-Free Interest Rate', eligibility: 'Parents of girl child under 10 years', status: 'active', link: 'https://www.indiapost.gov.in' },
+                { id: 4, name: 'Stand-Up India Scheme', cat: 'Entrepreneurship', benefit: 'Bank loans from ₹10 Lakhs to ₹1 Crore', eligibility: 'SC/ST and Women Entrepreneurs', status: 'active', link: 'https://www.standupmitra.in' },
+                { id: 5, name: 'Dena Shakti Scheme', cat: 'Micro-Loan', benefit: '0.25% Interest concession on loans', eligibility: 'Women in agriculture, retail, micro-enterprises', status: 'active', link: 'https://www.bankofbaroda.in' }
+            ];
+            try {
+                var s = localStorage.getItem('sheFinanceSchemes');
+                if (!s) { localStorage.setItem('sheFinanceSchemes', JSON.stringify(DEFAULT_SCHEMES)); return DEFAULT_SCHEMES; }
+                return JSON.parse(s);
+            } catch(e) { return DEFAULT_SCHEMES; }
+        }
+
+        function getAdminLiteracy() {
+            var DEFAULT_LITERACY = [
+                { id: 1, title: '50-30-20 Rule for Smart Budgeting', cat: 'Budgeting', type: 'Article Guide', level: 'Beginner', duration: '5 min read', desc: 'Divide monthly income into Needs (50%), Wants (30%), and Savings (20%).' },
+                { id: 2, title: 'Safe UPI & Net Banking Practices', cat: 'Digital Safety', type: 'Step-by-Step', level: 'All Levels', duration: '7 min read', desc: 'Protecting UPI PINs, identifying fake customer care numbers, and recognizing phishing.' },
+                { id: 3, title: 'Starting a Business with SHG Micro-Loans', cat: 'Entrepreneurship', type: 'Video Tutorial', level: 'Intermediate', duration: '12 min video', desc: 'Practical walkthrough for women self-help groups on securing bank credit.' },
+                { id: 4, title: 'Fixed Deposits vs Mutual Funds for Women', cat: 'Investments', type: 'Article Guide', level: 'Intermediate', duration: '6 min read', desc: 'Understanding risks, compounding interest, and steady returns for long-term security.' }
+            ];
+            try {
+                var l = localStorage.getItem('sheFinanceLiteracy');
+                if (!l) { localStorage.setItem('sheFinanceLiteracy', JSON.stringify(DEFAULT_LITERACY)); return DEFAULT_LITERACY; }
+                return JSON.parse(l);
+            } catch(e) { return DEFAULT_LITERACY; }
+        }
+
+        function buildLiveSchemesContent() {
+            var schemes = getAdminSchemes().filter(function(s){ return s.status === 'active'; });
+            var cardsHtml = schemes.map(function(s) {
+                return `
+                    <div class="scheme-card-box" style="margin-bottom:18px;">
+                        <div class="scheme-card-header">
+                            <span class="scheme-category-badge">${s.cat}</span>
+                            <h3 class="scheme-title"><i class="fa-solid fa-landmark" style="color:var(--secondary-color);font-size:1.1rem;"></i> ${s.name}</h3>
+                            <div class="scheme-target-tag"><strong>Eligibility:</strong> ${s.eligibility}</div>
+                        </div>
+                        <div class="scheme-stats-grid">
+                            <div class="stat-pill-item">
+                                <strong>Key Benefit</strong>
+                                <span style="color:#27ae60;font-weight:600;">${s.benefit}</span>
+                            </div>
+                            <div class="stat-pill-item">
+                                <strong>Status</strong>
+                                <span style="color:#2ecc71;font-weight:600;"><i class="fa-solid fa-circle-check"></i> Active Scheme</span>
+                            </div>
+                        </div>
+                        <div class="scheme-card-footer" style="justify-content: flex-end;">
+                            <a href="${s.link || 'https://www.india.gov.in'}" target="_blank" class="btn-official-source" style="background:var(--primary-color);color:#fff;border:none;">
+                                <i class="fa-solid fa-arrow-up-right-from-square"></i> Apply / View Official Portal
+                            </a>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            return `
+                <h2>🏛️ Government Schemes & Subsidies for Women</h2>
+                <p>Explore official central & state government financial schemes specifically designed for women's financial inclusion, savings, and entrepreneurship.</p>
+                
+                <div style="background:#f8f9fb;padding:16px 20px;border-radius:10px;margin-bottom:24px;border-left:4px solid var(--secondary-color);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+                    <div>
+                        <strong style="color:var(--primary-color);font-size:1rem;"><i class="fa-solid fa-bullhorn" style="color:var(--secondary-color);margin-right:6px;"></i> Curated Scheme Directory</strong>
+                        <p style="margin:4px 0 0;font-size:0.85rem;color:#666;">All schemes below are verified with official guidelines and portals.</p>
+                    </div>
+                    <a href="dashboard.html" class="btn btn-outline" style="font-size:0.85rem;padding:8px 14px;"><i class="fa-solid fa-headset"></i> Need Help Applying?</a>
+                </div>
+
+                <div id="live-schemes-list">
+                    ${cardsHtml || '<p style="color:#888;">No active schemes currently available.</p>'}
+                </div>
+            `;
+        }
+
         function renderMenu() {
             const menuContainer = document.getElementById('topics-menu');
             let html = '';
             flatTopics = [];
 
+            // 1. Core Educational Curriculum from education_data.js
             educationData.forEach((levelObj) => {
                 const levelIconHtml = levelObj.icon ? `<i class="${levelObj.icon}"></i>` : `<i class="fa-solid fa-graduation-cap"></i>`;
                 html += `
@@ -585,12 +678,77 @@
                 html += `</div>`;
             });
 
+            // 2. Dynamic Live Government Schemes (From Admin Schemes CMS)
+            var liveSchemesTopic = {
+                id: 'govt-schemes',
+                title: 'Live Government Schemes Directory',
+                icon: 'fa-solid fa-landmark',
+                content: buildLiveSchemesContent()
+            };
+            flatTopics.push(liveSchemesTopic);
+
+            html += `
+                <div class="level-group">
+                    <div class="level-title"><i class="fa-solid fa-landmark"></i> <span>Government Schemes Directory</span></div>
+                    <div class="topic-link" id="link-govt-schemes" onclick="loadArticle('govt-schemes')">
+                        <i class="fa-solid fa-landmark"></i> <span>Live Government Schemes Directory</span>
+                    </div>
+                </div>
+            `;
+
+            // 3. Dynamic Learning Guides (From Admin Literacy CMS)
+            var adminGuides = getAdminLiteracy();
+            if (adminGuides.length > 0) {
+                html += `
+                    <div class="level-group">
+                        <div class="level-title"><i class="fa-solid fa-certificate"></i> <span>Admin Published Guides</span></div>
+                `;
+                adminGuides.forEach(function(g, idx) {
+                    var gid = 'guide-' + g.id;
+                    var guideTopic = {
+                        id: gid,
+                        title: g.title,
+                        icon: 'fa-solid fa-file-lines',
+                        content: `
+                            <h2>${g.title}</h2>
+                            <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
+                                <span class="badge-cat" style="background:rgba(201,159,85,0.15);color:var(--primary-color);padding:4px 12px;border-radius:20px;font-size:0.8rem;font-weight:600;">${g.cat}</span>
+                                <span class="badge" style="background:#e8f4f8;color:#2980b9;padding:4px 12px;border-radius:20px;font-size:0.8rem;font-weight:600;">${g.type || 'Article Guide'}</span>
+                                <span class="badge" style="background:#fef9e7;color:#d4ac0d;padding:4px 12px;border-radius:20px;font-size:0.8rem;font-weight:600;">${g.level || 'All Levels'}</span>
+                                <span style="color:#888;font-size:0.85rem;display:flex;align-items:center;gap:4px;"><i class="fa-regular fa-clock"></i> ${g.duration || '5 min read'}</span>
+                            </div>
+                            <div style="background:#f8f9fb;padding:20px;border-radius:12px;border-left:4px solid var(--secondary-color);margin-bottom:20px;line-height:1.8;font-size:1.02rem;">
+                                <p style="margin:0;color:#333;">${g.desc}</p>
+                            </div>
+                            <h3>💡 Key Takeaways & Action Steps</h3>
+                            <ul style="line-height:1.9;">
+                                <li>Review this topic regularly and apply the principles to your monthly budgeting and savings.</li>
+                                <li>Use the <a href="tracker.html" style="color:var(--secondary-color);font-weight:600;">SheFinance Income & Expense Tracker</a> to monitor your progress.</li>
+                                <li>Set a dedicated target in the <a href="savings.html" style="color:var(--secondary-color);font-weight:600;">Savings Goals Tracker</a>.</li>
+                            </ul>
+                            <div style="margin-top:30px;display:flex;gap:12px;flex-wrap:wrap;">
+                                <a href="tracker.html" class="btn btn-primary"><i class="fa-solid fa-money-bill-transfer"></i> Go to Expense Tracker</a>
+                                <a href="savings.html" class="btn btn-outline"><i class="fa-solid fa-bullseye"></i> Set Savings Goal</a>
+                            </div>
+                        `
+                    };
+                    flatTopics.push(guideTopic);
+                    html += `<div class="topic-link" id="link-${gid}" onclick="loadArticle('${gid}')"><i class="fa-solid fa-file-lines"></i> <span>${g.title}</span></div>`;
+                });
+                html += `</div>`;
+            }
+
             menuContainer.innerHTML = html;
         }
 
         let currentTopicIndex = -1;
 
         function loadArticle(topicId) {
+            if (topicId === 'govt-schemes') {
+                // Re-build live content so updates from admin are instant
+                var t = flatTopics.find(function(x){ return x.id === 'govt-schemes'; });
+                if (t) t.content = buildLiveSchemesContent();
+            }
             const index = flatTopics.findIndex(t => t.id === topicId);
             if (index === -1) return;
 

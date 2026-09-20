@@ -30,6 +30,7 @@
             <li><a href="chatbot.html"><i class="fa-solid fa-robot"></i> AI Chatbot</a></li>
             <li><a href="education.html"><i class="fa-solid fa-book-open-reader"></i> Education Hub</a></li>
             <li><a href="reports.html"><i class="fa-solid fa-chart-pie"></i> Reports</a></li>
+            <li><a href="#help-support" onclick="document.getElementById('help-support-section').scrollIntoView({behavior:'smooth'}); return false;"><i class="fa-solid fa-headset"></i> Help & Support</a></li>
         </ul>
         <div class="sidebar-bottom">
             <a href="index.html" class="logout-btn" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i>
@@ -103,6 +104,39 @@
                     <h3><i class="fa-solid fa-wand-magic-sparkles"></i> AI Savings Prediction</h3>
                     <div class="ai-box" id="db-ai-box">
                         <!-- Populated dynamically -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Help & Support Section -->
+            <div class="dashboard-widgets" id="help-support-section" style="margin-top:30px;">
+                <div class="widget" style="flex:1;">
+                    <h3><i class="fa-solid fa-headset" style="color:var(--secondary-color);margin-right:8px;"></i> Help & Support</h3>
+                    <p style="color:#888;font-size:0.9rem;margin-bottom:18px;">Have a financial question or need help? Submit your query below and our team will respond.</p>
+                    <div id="support-form-area">
+                        <div style="margin-bottom:14px;">
+                            <label style="font-size:0.82rem;font-weight:600;color:#666;display:block;margin-bottom:5px;">Subject / Topic</label>
+                            <input type="text" id="support-subject" placeholder="e.g., How to apply for Mudra Yojana?" style="width:100%;padding:10px 14px;border:1px solid #ddd;border-radius:8px;font-family:'Outfit',sans-serif;font-size:0.9rem;box-sizing:border-box;outline:none;">
+                        </div>
+                        <div style="margin-bottom:14px;">
+                            <label style="font-size:0.82rem;font-weight:600;color:#666;display:block;margin-bottom:5px;">Describe your question or issue</label>
+                            <textarea id="support-message" rows="4" placeholder="Tell us how we can help you..." style="width:100%;padding:10px 14px;border:1px solid #ddd;border-radius:8px;font-family:'Outfit',sans-serif;font-size:0.9rem;box-sizing:border-box;outline:none;resize:vertical;"></textarea>
+                        </div>
+                        <button onclick="submitSupportTicket()" class="btn btn-primary" style="padding:10px 24px;font-size:0.92rem;"><i class="fa-solid fa-paper-plane"></i> Submit Ticket</button>
+                    </div>
+                    <!-- My Past Tickets -->
+                    <div id="my-tickets-area" style="margin-top:22px;"></div>
+                </div>
+                <div class="widget" style="flex:0.6;">
+                    <h3><i class="fa-solid fa-circle-question" style="color:var(--secondary-color);margin-right:8px;"></i> Quick Help</h3>
+                    <div style="display:flex;flex-direction:column;gap:12px;margin-top:10px;">
+                        <a href="chatbot.html" style="display:flex;align-items:center;gap:10px;padding:12px 15px;background:#f8f9fb;border-radius:10px;color:var(--primary-color);font-weight:500;font-size:0.9rem;transition:all 0.2s;"><i class="fa-solid fa-robot" style="color:var(--secondary-color);font-size:1.1rem;"></i> Ask AI Chatbot</a>
+                        <a href="education.html" style="display:flex;align-items:center;gap:10px;padding:12px 15px;background:#f8f9fb;border-radius:10px;color:var(--primary-color);font-weight:500;font-size:0.9rem;transition:all 0.2s;"><i class="fa-solid fa-book-open" style="color:var(--secondary-color);font-size:1.1rem;"></i> Education Hub & Guides</a>
+                        <a href="education.html#govt-schemes" style="display:flex;align-items:center;gap:10px;padding:12px 15px;background:#f8f9fb;border-radius:10px;color:var(--primary-color);font-weight:500;font-size:0.9rem;transition:all 0.2s;"><i class="fa-solid fa-landmark" style="color:var(--secondary-color);font-size:1.1rem;"></i> Government Schemes</a>
+                        <div style="padding:14px 15px;background:linear-gradient(135deg,rgba(201,159,85,0.08),rgba(201,159,85,0.02));border-radius:10px;border:1px solid rgba(201,159,85,0.15);">
+                            <p style="font-size:0.82rem;color:#888;margin:0;"><i class="fa-solid fa-phone" style="color:var(--secondary-color);margin-right:6px;"></i> <strong>Women Helpline:</strong> 181</p>
+                            <p style="font-size:0.82rem;color:#888;margin:4px 0 0;"><i class="fa-solid fa-shield" style="color:var(--secondary-color);margin-right:6px;"></i> <strong>Cyber Crime:</strong> 1930</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -307,6 +341,67 @@
             localStorage.removeItem('userAvatar');
             localStorage.removeItem('userProfile');
         }
+
+        // ===== HELP & SUPPORT TICKET SYSTEM =====
+        function submitSupportTicket() {
+            var subject = document.getElementById('support-subject').value.trim();
+            var message = document.getElementById('support-message').value.trim();
+            if (!subject || !message) { alert('Please fill in both subject and message.'); return; }
+            var userName = localStorage.getItem('userName') || 'User';
+            var userEmail = localStorage.getItem('userEmail') || 'user@shefinance.com';
+            var tickets = JSON.parse(localStorage.getItem('sheFinanceTickets') || '[]');
+            var newTicket = {
+                id: 'TCK-' + Math.floor(100 + Math.random() * 900),
+                name: userName,
+                user: userName,
+                email: userEmail,
+                subject: subject,
+                msg: message,
+                message: message,
+                date: new Date().toISOString().split('T')[0],
+                status: 'pending',
+                reply: ''
+            };
+            tickets.push(newTicket);
+            localStorage.setItem('sheFinanceTickets', JSON.stringify(tickets));
+            document.getElementById('support-subject').value = '';
+            document.getElementById('support-message').value = '';
+            showSupportToast('Ticket submitted successfully! Our team will respond soon.');
+            renderMyTickets();
+        }
+
+        function renderMyTickets() {
+            var userEmail = localStorage.getItem('userEmail') || '';
+            var tickets = JSON.parse(localStorage.getItem('sheFinanceTickets') || '[]');
+            var myTickets = tickets.filter(function(t) { return t.email === userEmail; });
+            var area = document.getElementById('my-tickets-area');
+            if (myTickets.length === 0) { area.innerHTML = ''; return; }
+            var html = '<h4 style="margin:0 0 12px;color:var(--primary-color);font-size:0.95rem;"><i class="fa-solid fa-ticket" style="color:var(--secondary-color);margin-right:6px;"></i>My Tickets</h4>';
+            myTickets.reverse().forEach(function(t) {
+                var statusBadge = t.status === 'resolved'
+                    ? '<span style="background:rgba(46,204,113,0.12);color:#2ecc71;padding:3px 10px;border-radius:12px;font-size:0.75rem;font-weight:600;">✅ Resolved</span>'
+                    : '<span style="background:rgba(243,156,18,0.14);color:#d68910;padding:3px 10px;border-radius:12px;font-size:0.75rem;font-weight:600;">🕐 Pending</span>';
+                html += '<div style="background:#f8f9fb;padding:14px 16px;border-radius:10px;margin-bottom:10px;">';
+                html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;"><strong style="font-size:0.88rem;color:var(--primary-color);">' + t.subject + '</strong>' + statusBadge + '</div>';
+                html += '<p style="font-size:0.82rem;color:#888;margin:0;">' + t.id + ' · ' + t.date + '</p>';
+                if (t.reply) {
+                    html += '<div style="margin-top:10px;padding:10px 14px;background:rgba(46,204,113,0.06);border-left:3px solid #2ecc71;border-radius:6px;"><p style="font-size:0.82rem;color:#555;margin:0;"><i class="fa-solid fa-reply" style="color:#2ecc71;margin-right:6px;"></i><strong>Admin Reply:</strong> ' + t.reply + '</p></div>';
+                }
+                html += '</div>';
+            });
+            area.innerHTML = html;
+        }
+
+        function showSupportToast(msg) {
+            var toast = document.createElement('div');
+            toast.style.cssText = 'position:fixed;bottom:30px;right:30px;background:var(--primary-color);color:#fff;padding:14px 24px;border-radius:10px;font-size:0.9rem;font-weight:500;box-shadow:0 8px 24px rgba(0,0,0,0.2);z-index:9999;display:flex;align-items:center;gap:10px;animation:fadeIn 0.3s ease;';
+            toast.innerHTML = '<i class="fa-solid fa-check-circle"></i> ' + msg;
+            document.body.appendChild(toast);
+            setTimeout(function() { toast.remove(); }, 3500);
+        }
+
+        // Load tickets on page load
+        renderMyTickets();
 
         // Sticky navbar scroll effect
         window.addEventListener('scroll', function () {

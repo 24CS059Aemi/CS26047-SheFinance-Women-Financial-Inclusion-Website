@@ -470,12 +470,16 @@
             <label>Subject</label>
             <div id="view-ticket-subject" style="font-weight:600;color:var(--primary-color);padding:8px 0;font-size:1rem;"></div>
         </div>
-        <div style="margin-bottom:20px;">
+        <div style="margin-bottom:15px;">
             <label>Message / Inquiry Content</label>
             <div id="view-ticket-msg" style="background:#fff;border:1px solid #e0e0e0;padding:12px;border-radius:8px;font-size:0.9rem;color:#444;line-height:1.6;"></div>
         </div>
+        <div style="margin-bottom:15px;">
+            <label>Admin Reply / Resolution Response</label>
+            <textarea id="view-ticket-reply-input" rows="3" class="modal-input" style="margin-bottom:0;" placeholder="Write a response to help this user..."></textarea>
+        </div>
         <div style="display:flex;justify-content:space-between;align-items:center;">
-            <button type="button" id="btn-ticket-toggle-modal" class="action-btn btn-unblock" onclick="toggleTicketModalStatus()"><i class="fa-solid fa-check-double"></i> Mark Resolved</button>
+            <button type="button" id="btn-ticket-toggle-modal" class="action-btn btn-unblock" onclick="toggleTicketModalStatus()"><i class="fa-solid fa-check-double"></i> Save Reply & Resolve</button>
             <button type="button" class="action-btn btn-del" onclick="closeModal('modal-view-ticket')">Close</button>
         </div>
     </div>
@@ -807,14 +811,15 @@ function viewTicketModal(id) {
     document.getElementById('view-ticket-email').textContent = t.email;
     document.getElementById('view-ticket-date').textContent = t.date;
     document.getElementById('view-ticket-subject').textContent = t.subject;
-    document.getElementById('view-ticket-msg').textContent = t.msg;
+    document.getElementById('view-ticket-msg').textContent = t.msg || t.message || '';
+    document.getElementById('view-ticket-reply-input').value = t.reply || '';
 
     var isPending = t.status === 'pending';
     document.getElementById('view-ticket-status').innerHTML = isPending ? '<span class="badge badge-pending">Pending</span>' : '<span class="badge badge-resolved">Resolved</span>';
 
     var btn = document.getElementById('btn-ticket-toggle-modal');
     if (isPending) {
-        btn.innerHTML = '<i class="fa-solid fa-check-double"></i> Mark as Resolved';
+        btn.innerHTML = '<i class="fa-solid fa-check-double"></i> Save Reply & Resolve';
         btn.className = 'action-btn btn-unblock';
     } else {
         btn.innerHTML = '<i class="fa-solid fa-rotate-left"></i> Reopen Ticket';
@@ -826,7 +831,15 @@ function viewTicketModal(id) {
 
 function toggleTicketModalStatus() {
     if (!currentViewingTicketId) return;
-    toggleTicketStatus(currentViewingTicketId);
+    var replyText = document.getElementById('view-ticket-reply-input').value.trim();
+    var tickets = getTickets();
+    var t = tickets.find(function(x) { return x.id === currentViewingTicketId; });
+    if (!t) return;
+    if (replyText) t.reply = replyText;
+    t.status = t.status === 'pending' ? 'resolved' : 'pending';
+    saveTickets(tickets);
+    renderTicketsTable();
+    showToast('Ticket ' + t.id + ' updated (' + t.status + ')!');
     viewTicketModal(currentViewingTicketId);
 }
 
