@@ -300,24 +300,50 @@ export default function Tracker() {
         <div className="modal-overlay active" onClick={e => e.target === e.currentTarget && setShowModal(false)}>
           <div className="modal">
             <h3>
-              <i className={`fa-solid ${editIdx >= 0 ? 'fa-pen-to-square' : 'fa-plus-circle'}`} style={{ color: 'var(--secondary-color)' }}></i>
-              {editIdx >= 0 ? ' Edit Transaction' : ' Add Transaction'}
+              <i className={`fa-solid ${editingTx ? 'fa-pen-to-square' : 'fa-plus-circle'}`} style={{ color: 'var(--secondary-color)' }}></i>
+              {editingTx ? ' Edit Transaction' : ' Add Transaction'}
             </h3>
             <div className="input-group">
               <label>Type</label>
-              <div className="type-toggle">
-                <input type="radio" id="type-income" name="tx-type" checked={form.type === 'income'} onChange={() => setForm(f => ({ ...f, type: 'income', category: 'Salary' }))} style={{ display: 'none' }} />
-                <label htmlFor="type-income" className="type-income-label" style={{ flex: 1, textAlign: 'center', padding: '12px', cursor: 'pointer', fontWeight: 500, background: form.type === 'income' ? '#2ecc71' : '', color: form.type === 'income' ? '#fff' : '', transition: 'all 0.3s ease' }}>
+              <div className="type-toggle" style={{ display: 'flex', gap: '10px', marginTop: '5px' }}>
+                <button
+                  type="button"
+                  className={`btn ${form.type === 'income' ? 'btn-income-active' : ''}`}
+                  onClick={() => setForm(f => ({ ...f, type: 'income', category: 'Salary' }))}
+                  style={{
+                    flex: 1,
+                    padding: '10px',
+                    borderRadius: '8px',
+                    border: form.type === 'income' ? '2px solid #2ecc71' : '1px solid #ddd',
+                    background: form.type === 'income' ? '#eafaf1' : '#fff',
+                    color: form.type === 'income' ? '#27ae60' : '#555',
+                    fontWeight: 600,
+                    cursor: 'pointer'
+                  }}
+                >
                   <i className="fa-solid fa-arrow-up"></i> Income
-                </label>
-                <input type="radio" id="type-expense" name="tx-type" checked={form.type === 'expense'} onChange={() => setForm(f => ({ ...f, type: 'expense', category: 'Food' }))} style={{ display: 'none' }} />
-                <label htmlFor="type-expense" className="type-expense-label" style={{ flex: 1, textAlign: 'center', padding: '12px', cursor: 'pointer', fontWeight: 500, background: form.type === 'expense' ? '#e74c3c' : '', color: form.type === 'expense' ? '#fff' : '', transition: 'all 0.3s ease' }}>
+                </button>
+                <button
+                  type="button"
+                  className={`btn ${form.type === 'expense' ? 'btn-expense-active' : ''}`}
+                  onClick={() => setForm(f => ({ ...f, type: 'expense', category: 'Food' }))}
+                  style={{
+                    flex: 1,
+                    padding: '10px',
+                    borderRadius: '8px',
+                    border: form.type === 'expense' ? '2px solid #e74c3c' : '1px solid #ddd',
+                    background: form.type === 'expense' ? '#fdeeed' : '#fff',
+                    color: form.type === 'expense' ? '#c0392b' : '#555',
+                    fontWeight: 600,
+                    cursor: 'pointer'
+                  }}
+                >
                   <i className="fa-solid fa-arrow-down"></i> Expense
-                </label>
+                </button>
               </div>
             </div>
             <div className="input-group">
-              <label>Description</label>
+              <label>Description / Note</label>
               <input type="text" placeholder="e.g., Monthly Salary, Groceries" value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} />
             </div>
             <div className="input-group">
@@ -340,8 +366,10 @@ export default function Tracker() {
               <input type="date" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))} />
             </div>
             <div className="modal-actions">
-              <button className="btn-cancel" onClick={() => setShowModal(false)}>Cancel</button>
-              <button className="btn-save" onClick={handleSave}>Save Transaction</button>
+              <button type="button" className="btn-cancel" onClick={() => setShowModal(false)}>Cancel</button>
+              <button type="button" className="btn-save" onClick={handleSave}>
+                {editingTx ? 'Update Transaction' : 'Save Transaction'}
+              </button>
             </div>
           </div>
         </div>
