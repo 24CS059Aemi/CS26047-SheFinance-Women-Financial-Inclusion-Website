@@ -4,10 +4,14 @@ const cors = require('cors');
 const { OAuth2Client } = require('google-auth-library');
 const nodemailer = require('nodemailer');
 
+const path = require('path');
+
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.use(express.static(__dirname)); // Serve frontend HTML/CSS files
+
+// Serve React production build from client/dist
+app.use(express.static(path.join(__dirname, 'client/dist')));
 
 // Initialize Google Auth Client
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
@@ -129,6 +133,11 @@ app.post('/api/send-welcome', (req, res) => {
     });
 
     res.status(200).json({ success: true, message: 'Welcome email triggered.' });
+});
+
+// SPA fallback for React Router
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'client/dist/index.html'));
 });
 
 const PORT = process.env.PORT || 3000;

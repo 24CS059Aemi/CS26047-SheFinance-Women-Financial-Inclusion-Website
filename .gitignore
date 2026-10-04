@@ -10,3 +10,10 @@ npm-debug.log*
 # Python
 __pycache__/
 *.pyc
+
+# Legacy HTML backup (not needed in repo)
+legacy_html_backup/
+
+# Build output
+dist/
+client/dist/

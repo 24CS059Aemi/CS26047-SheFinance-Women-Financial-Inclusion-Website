@@ -590,7 +590,7 @@ def predict_timeline():
         reg.fit(simulated_savings, months)
         
         # Predict the month when target is reached
-        pred_month = float(reg.predict(np.array([[target_amount]]))[0])
+        pred_month = float(reg.predict(np.array([[target_amount]])).ravel()[0])
         days_required = pred_month * 30.4
         
         predicted_finish_date = today + timedelta(days=days_required)
