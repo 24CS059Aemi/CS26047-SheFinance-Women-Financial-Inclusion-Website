@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const SupportTicket = require('../models/SupportTicket');
-const { protect, adminOnly } = require('../middleware/auth');
+const { protect, adminOnly, optionalAuth } = require('../middleware/auth');
 
-// ─── POST /api/support (anyone can submit a ticket) ──────────────────────────
-router.post('/', async (req, res) => {
+// ─── POST /api/support (anyone can submit a ticket; attaches user ID if logged in) ─────
+router.post('/', optionalAuth, async (req, res) => {
   try {
     const { name, email, category, subject, message, priority } = req.body;
     if (!name || !email || !subject || !message) {

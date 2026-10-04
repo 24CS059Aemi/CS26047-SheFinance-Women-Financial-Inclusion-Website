@@ -34,7 +34,7 @@ function sendWelcomeMail(email, name) {
 // ─── POST /api/auth/register ────────────────────────────────────────────────
 router.post('/register', async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password, role, phone, mobile } = req.body;
     if (!name || !email || !password) {
       return res.status(400).json({ success: false, message: 'All fields are required.' });
     }
@@ -44,7 +44,15 @@ router.post('/register', async (req, res) => {
       return res.status(409).json({ success: false, message: 'An account with this email already exists.' });
     }
 
-    const user = await User.create({ name, email, password, role: role || 'user', provider: 'local' });
+    const phoneNumber = phone || mobile || '';
+    const user = await User.create({
+      name,
+      email,
+      password,
+      role: role || 'user',
+      provider: 'local',
+      profile: { phone: phoneNumber }
+    });
 
     const token = jwt.sign({ id: user._id, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
 

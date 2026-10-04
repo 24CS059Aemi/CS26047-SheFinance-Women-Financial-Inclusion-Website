@@ -125,17 +125,32 @@ SUGGESTIONS = {
 # ----------------------------------------------------
 # Grok API & Mathematical Financial Solver Integration
 # ----------------------------------------------------
-# Groq API Integration (FREE - Llama 3 Model)
-# ----------------------------------------------------
 import urllib.request
 import urllib.parse
 import json
 import os
 
+# Helper to load .env without third-party packages
+def _load_env_file():
+    env_path = os.path.join(os.path.dirname(__file__), '.env')
+    if os.path.exists(env_path):
+        try:
+            with open(env_path, 'r', encoding='utf-8') as f:
+                for line in f:
+                    line = line.strip()
+                    if line and not line.startswith('#') and '=' in line:
+                        k, v = line.split('=', 1)
+                        k, v = k.strip(), v.strip().strip("'\"")
+                        if k and not os.getenv(k):
+                            os.environ[k] = v
+        except Exception as e:
+            print(f"Error reading .env: {e}")
+
+_load_env_file()
 GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
 
 def call_grok_api(prompt_text, user_profile=None, custom_api_key=None):
-    api_key = custom_api_key or GROQ_API_KEY
+    api_key = (custom_api_key and custom_api_key.strip()) or os.getenv("GROQ_API_KEY", "")
     if not api_key:
         return None
 
@@ -143,43 +158,49 @@ def call_grok_api(prompt_text, user_profile=None, custom_api_key=None):
     occ = user_profile.get("occupation", "women financial user") if user_profile else "women financial user"
 
     system_prompt = (
-        "You are SheFinance AI, an intelligent and friendly financial advisor chatbot. "
-        "Answer ANY question asked by the user clearly, accurately and helpfully — just like Gemini or ChatGPT. "
-        "For financial math questions (SIP, EMI, 50/30/20 budgeting, compound interest, tax saving), provide step-by-step calculations with exact formulas. "
-        "For general or educational questions, give well-structured, easy-to-understand answers in markdown format."
+        "You are SheFinance AI, an intelligent, warm, and expert financial advisor chatbot for women in India. "
+        "STRICT MATH & TEXT FORMATTING RULE: NEVER output LaTeX code, backslashes (\\), \\frac, \\%, \\;, or \\text! "
+        "Write all numbers, formulas, and math steps in clean, human-readable plain text and markdown. "
+        "For simple greetings ('hi', 'hello', 'namaste', 'kem cho'), respond warmly in 2-3 sentences asking how you can help. "
+        "Support English, Gujarati, Hindi, or Gujlish/Hinglish as requested."
     )
 
-    payload = {
-        "model": "qwen/qwen3.6-27b",
-        "messages": [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": f"User Occupation: {occ}\nQuestion: {prompt_text}"}
-        ],
-        "temperature": 0.4,
-        "max_tokens": 2048
-    }
+    models_to_try = ["openai/gpt-oss-120b", "qwen/qwen3.8-27b", "openai/gpt-oss-20b"]
 
-    try:
-        req = urllib.request.Request(
-            url,
-            data=json.dumps(payload).encode("utf-8"),
-            headers={
-                "Content-Type": "application/json",
-                "Authorization": f"Bearer {api_key.strip()}",
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36"
-            },
-            method="POST"
-        )
-        with urllib.request.urlopen(req, timeout=15) as response:
-            res_data = json.loads(response.read().decode("utf-8"))
-            raw = res_data["choices"][0]["message"]["content"]
-            # Strip internal <think>...</think> reasoning blocks
-            import re as _re
-            clean = _re.sub(r'<think>.*?</think>', '', raw, flags=_re.DOTALL).strip()
-            return clean if clean else raw
-    except Exception as e:
-        print(f"Groq API error: {e}")
-        return None
+    for model in models_to_try:
+        payload = {
+            "model": model,
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": f"User Occupation: {occ}\nQuestion: {prompt_text}"}
+            ],
+            "temperature": 0.5,
+            "max_tokens": 500
+        }
+
+        try:
+            req = urllib.request.Request(
+                url,
+                data=json.dumps(payload).encode("utf-8"),
+                headers={
+                    "Content-Type": "application/json",
+                    "Authorization": f"Bearer {api_key.strip()}",
+                    "User-Agent": "Mozilla/5.0"
+                },
+                method="POST"
+            )
+            with urllib.request.urlopen(req, timeout=12) as response:
+                res_data = json.loads(response.read().decode("utf-8"))
+                raw = res_data["choices"][0]["message"]["content"]
+                import re as _re
+                clean = _re.sub(r'<think>[\s\S]*?<\/think>', '', raw).strip()
+                if clean:
+                    return {"reply": clean, "model": model}
+        except Exception as e:
+            print(f"Groq API error on {model}: {e}")
+            continue
+
+    return None
 
 
 def solve_financial_math(cleaned_text, raw_text):
@@ -382,15 +403,15 @@ class MLFinancialChatbot:
                 "algorithm": "Grok AI & Supervised Naive Bayes Engine"
             }
 
-        # 1. Attempt Grok API if key provided or active
-        grok_reply = call_grok_api(user_text, user_profile, custom_api_key)
-        if grok_reply:
+        # 1. Primary: Groq API Neural AI Model
+        grok_res = call_grok_api(user_text, user_profile, custom_api_key)
+        if grok_res and isinstance(grok_res, dict):
             return {
-                "reply": grok_reply,
-                "intent": "grok_api_math_solution",
-                "confidence": 1.0,
-                "suggested_questions": SUGGESTIONS["financial_mathematics"],
-                "algorithm": "Grok API (xAI Neural LLM Engine)"
+                "reply": grok_res["reply"],
+                "intent": "groq_financial_advisory",
+                "confidence": 0.99,
+                "suggested_questions": SUGGESTIONS.get("financial_mathematics", SUGGESTIONS["greeting"]),
+                "algorithm": f"Groq AI ({grok_res['model']})"
             }
 
         # 2. Check for Mathematical Financial Engine triggers

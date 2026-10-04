@@ -13,17 +13,157 @@ const QUICK_QUESTIONS = [
 
 const WELCOME_MSG = {
   role: 'bot',
-  text: 'Hello! 👋 I am **SheFinance AI**, your intelligent financial advisor powered by Machine Learning & Grok Math Engine. I can assist you with:\n\n• 💡 Budgeting strategies & 50/30/20 rule\n• 🧮 SIP, EMI, Compound Interest calculations\n• 🏛️ Government schemes for women\n• 📈 Investment basics & savings tips\n• ⚡ Debt management strategies\n\nHow can I help you today?',
+  text: 'Hello! 👋 I am **SheFinance AI**, your intelligent financial advisor. I can assist you with:\n\n• 💡 Budgeting strategies & 50/30/20 rule\n• 🧮 SIP, EMI, Compound Interest calculations\n• 🏛️ Government schemes for women (Mudra, SSY, MSSC, Stand-Up India)\n• 📈 Investment basics & savings tips\n• ⚡ Debt management strategies\n\nHow can I help you today?',
   time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
 };
 
 function parseMarkdown(text) {
-  return text
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.*?)\*/g, '<em>$1</em>')
-    .replace(/\n• /g, '<br/>• ')
-    .replace(/\n\n/g, '<br/><br/>')
-    .replace(/\n/g, '<br/>');
+  if (!text) return '';
+
+  // ── 1. Server-side LaTeX cleanup (extra safety) ─────────────────────────
+  text = text
+    .replace(/\\\[[\s\S]*?\\\]/g, (m) => m.replace(/^\\\[/, '').replace(/\\\]$/, '').trim())
+    .replace(/\\\([\s\S]*?\\\)/g, (m) => m.replace(/^\\\(/, '').replace(/\\\)$/, '').trim())
+    .replace(/\\frac\{([^}]*)\}\{([^}]*)\}/g, '($1 ÷ $2)')
+    .replace(/\\(times|cdot)/g, '×')
+    .replace(/\\div/g, '÷')
+    .replace(/\\approx/g, '≈')
+    .replace(/\\text\{([^}]*)\}/g, '$1')
+    .replace(/\\mathbf\{([^}]*)\}/g, '$1')
+    .replace(/\\[a-zA-Z]+/g, '')
+    .replace(/\$\$([\s\S]*?)\$\$/g, (_, inner) => inner.trim())
+    .replace(/\$([^$\n]+?)\$/g, (_, inner) => inner.trim());
+
+  // ── 2. Escape HTML special chars (except we'll insert our own tags) ──────
+  const escHtml = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+  // ── 3. Fenced code blocks  ```...``` ────────────────────────────────────
+  text = text.replace(/```[\w]*\n?([\s\S]*?)```/g, (_, code) =>
+    `<pre class="md-code-block"><code>${escHtml(code.trim())}</code></pre>`
+  );
+
+  // ── 4. Process line-by-line ──────────────────────────────────────────────
+  const lines = text.split('\n');
+  let html = '';
+  let inTable = false;
+  let tableHtml = '';
+  let tableHeaderDone = false;
+  let inList = false;
+  let listType = '';
+
+  const closeList = () => {
+    if (inList) {
+      html += listType === 'ol' ? '</ol>' : '</ul>';
+      inList = false;
+      listType = '';
+    }
+  };
+
+  const closeTable = () => {
+    if (inTable) {
+      html += tableHtml + '</tbody></table></div>';
+      inTable = false;
+      tableHtml = '';
+      tableHeaderDone = false;
+    }
+  };
+
+  // Inline formatters
+  const inlineFmt = (s) => s
+    .replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/_(.+?)_/g, '<em>$1</em>')
+    .replace(/`([^`]+)`/g, '<code class="md-inline-code">$1</code>');
+
+  lines.forEach((line) => {
+    // Already converted code blocks — pass through
+    if (line.includes('<pre class="md-code-block">') || line.includes('</pre>')) {
+      closeList(); closeTable();
+      html += line;
+      return;
+    }
+
+    // Horizontal rule
+    if (/^(\*{3,}|-{3,}|_{3,})\s*$/.test(line)) {
+      closeList(); closeTable();
+      html += '<hr class="md-hr"/>';
+      return;
+    }
+
+    // Headings h1-h4
+    const hMatch = line.match(/^(#{1,4})\s+(.+)/);
+    if (hMatch) {
+      closeList(); closeTable();
+      const level = hMatch[1].length;
+      const content = inlineFmt(escHtml(hMatch[2]));
+      html += `<h${level} class="md-h${level}">${content}</h${level}>`;
+      return;
+    }
+
+    // Blockquote
+    if (/^>\s?/.test(line)) {
+      closeList(); closeTable();
+      html += `<blockquote class="md-blockquote">${inlineFmt(escHtml(line.replace(/^>\s?/, '')))}</blockquote>`;
+      return;
+    }
+
+    // Table rows  |...|...|
+    if (/^\|/.test(line)) {
+      const cells = line.split('|').filter((_, i, a) => i > 0 && i < a.length - 1);
+      // Separator row  |---|---|
+      if (cells.every(c => /^[\s:-]+$/.test(c))) {
+        tableHtml += '<tbody>';
+        tableHeaderDone = true;
+        return;
+      }
+      if (!inTable) {
+        closeList();
+        inTable = true;
+        tableHtml = '<div class="md-table-wrap"><table class="md-table"><thead><tr>';
+        cells.forEach(c => { tableHtml += `<th>${inlineFmt(escHtml(c.trim()))}</th>`; });
+        tableHtml += '</tr></thead>';
+      } else if (tableHeaderDone) {
+        tableHtml += '<tr>';
+        cells.forEach(c => { tableHtml += `<td>${inlineFmt(escHtml(c.trim()))}</td>`; });
+        tableHtml += '</tr>';
+      }
+      return;
+    } else {
+      closeTable();
+    }
+
+    // Unordered list  - item  or  • item  or  * item
+    const ulMatch = line.match(/^(\s*)([-•*])\s+(.+)/);
+    if (ulMatch) {
+      if (!inList || listType !== 'ul') { closeList(); html += '<ul class="md-ul">'; inList = true; listType = 'ul'; }
+      html += `<li>${inlineFmt(escHtml(ulMatch[3]))}</li>`;
+      return;
+    }
+
+    // Ordered list  1. item
+    const olMatch = line.match(/^(\s*)\d+\.\s+(.+)/);
+    if (olMatch) {
+      if (!inList || listType !== 'ol') { closeList(); html += '<ol class="md-ol">'; inList = true; listType = 'ol'; }
+      html += `<li>${inlineFmt(escHtml(olMatch[2]))}</li>`;
+      return;
+    }
+
+    // Blank line
+    if (line.trim() === '') {
+      closeList();
+      html += '<br/>';
+      return;
+    }
+
+    // Regular paragraph
+    closeList();
+    html += `<p class="md-p">${inlineFmt(escHtml(line))}</p>`;
+  });
+
+  closeList();
+  closeTable();
+  return html;
 }
 
 export default function Chatbot() {
@@ -200,8 +340,8 @@ export default function Chatbot() {
                 </div>
               </div>
               <div className="chatbot-header-badge">
-                <span style={{ padding: '4px 12px', fontSize: '0.75rem', border: '1px solid rgba(255,255,255,0.4)', color: 'white', borderRadius: '20px' }}>
-                  <i className="fa-solid fa-microchip"></i> AI Powered
+                <span style={{ padding: '5px 14px', fontSize: '0.78rem', border: '1px solid rgba(255,255,255,0.3)', background: 'rgba(255,255,255,0.15)', color: '#fff', borderRadius: '20px', fontWeight: 600 }}>
+                  <i className="fa-solid fa-sparkles" style={{ color: 'var(--secondary-color)', marginRight: '6px' }}></i> AI Powered
                 </span>
               </div>
             </div>
@@ -209,16 +349,15 @@ export default function Chatbot() {
             {/* Messages */}
             <div className="chat-messages">
               {messages.map((msg, i) => (
-                <div key={i} className={`chat-bubble ${msg.role === 'user' ? 'user-bubble' : 'bot-bubble'}`}>
+                <div key={i} className={`chat-bubble-container ${msg.role === 'user' ? 'user-container' : 'bot-container'}`}>
                   {msg.role === 'bot' && (
                     <div className="chat-avatar bot-avatar"><i className="fa-solid fa-robot"></i></div>
                   )}
-                  <div className="bubble-content">
+                  <div className={`chat-bubble ${msg.role === 'user' ? 'user-bubble' : 'bot-bubble'}`}>
                     <div className="bubble-text" dangerouslySetInnerHTML={{ __html: parseMarkdown(msg.text) }}></div>
-                    {msg.role === 'bot' && msg.algorithm && (
+                    {msg.role === 'bot' && (
                       <div className="bubble-meta">
-                        <i className="fa-solid fa-microchip"></i> {msg.algorithm}
-                        {msg.confidence && <> • Confidence: {(msg.confidence * 100).toFixed(0)}%</>}
+                        <i className="fa-solid fa-sparkles" style={{ color: 'var(--secondary-color)' }}></i> SheFinance AI Engine
                       </div>
                     )}
                     {msg.role === 'bot' && msg.suggestions && (
@@ -236,9 +375,9 @@ export default function Chatbot() {
                 </div>
               ))}
               {loading && (
-                <div className="chat-bubble bot-bubble">
+                <div className="chat-bubble-container bot-container">
                   <div className="chat-avatar bot-avatar"><i className="fa-solid fa-robot"></i></div>
-                  <div className="bubble-content">
+                  <div className="chat-bubble bot-bubble">
                     <div className="typing-dots">
                       <span></span><span></span><span></span>
                     </div>

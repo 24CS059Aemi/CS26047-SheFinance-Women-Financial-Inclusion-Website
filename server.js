@@ -24,6 +24,7 @@ app.use('/api/budget',       require('./routes/budget'));
 app.use('/api/savings',      require('./routes/savings'));
 app.use('/api/support',      require('./routes/support'));
 app.use('/api/admin',        require('./routes/admin'));
+app.use('/api/chatbot',      require('./routes/chatbot'));
 
 // ─── Legacy compatibility endpoints ──────────────────────────────────────────
 // Keep /api/google-login and /api/send-welcome working (now handled in auth routes)

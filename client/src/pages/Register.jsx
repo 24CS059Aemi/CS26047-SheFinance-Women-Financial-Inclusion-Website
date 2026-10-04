@@ -30,6 +30,7 @@ export default function Register() {
         email: form.email,
         password: form.password,
         role: form.role,
+        phone: form.mobile,
       });
       localStorage.setItem('token', data.token);
       localStorage.setItem('userName', data.user.name);

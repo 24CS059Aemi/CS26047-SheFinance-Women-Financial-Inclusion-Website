@@ -18,7 +18,14 @@ async function apiFetch(endpoint, options = {}) {
       ...(options.headers || {}),
     },
   });
-  const data = await res.json();
+  const contentType = res.headers.get('content-type') || '';
+  let data;
+  if (contentType.includes('application/json')) {
+    data = await res.json();
+  } else {
+    const text = await res.text();
+    throw new Error(res.ok ? text : `Backend error (${res.status}). Please ensure backend is running with latest routes.`);
+  }
   if (!res.ok) {
     throw new Error(data.message || 'Something went wrong.');
   }

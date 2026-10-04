@@ -25,4 +25,20 @@ function adminOnly(req, res, next) {
   next();
 }
 
-module.exports = { protect, adminOnly };
+// Optional Auth (populates req.user if token is present and valid, doesn't block guests)
+function optionalAuth(req, res, next) {
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    try {
+      const token = authHeader.split(' ')[1];
+      const decoded = jwt.verify(token, JWT_SECRET);
+      req.user = decoded;
+    } catch {
+      // Invalid/expired token, proceed without user
+    }
+  }
+  next();
+}
+
+module.exports = { protect, adminOnly, optionalAuth };
+

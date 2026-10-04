@@ -40,17 +40,6 @@ router.post('/', async (req, res) => {
   }
 });
 
-// ─── DELETE /api/transactions/:id ────────────────────────────────────────────
-router.delete('/:id', async (req, res) => {
-  try {
-    const tx = await Transaction.findOneAndDelete({ _id: req.params.id, userId: req.user.id });
-    if (!tx) return res.status(404).json({ success: false, message: 'Transaction not found.' });
-    res.json({ success: true, message: 'Transaction deleted.' });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
-});
-
 // ─── GET /api/transactions/summary ───────────────────────────────────────────
 router.get('/summary', async (req, res) => {
   try {
@@ -58,6 +47,17 @@ router.get('/summary', async (req, res) => {
     const income = all.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
     const expense = all.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
     res.json({ success: true, summary: { income, expense, balance: income - expense } });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// ─── DELETE /api/transactions/:id ────────────────────────────────────────────
+router.delete('/:id', async (req, res) => {
+  try {
+    const tx = await Transaction.findOneAndDelete({ _id: req.params.id, userId: req.user.id });
+    if (!tx) return res.status(404).json({ success: false, message: 'Transaction not found.' });
+    res.json({ success: true, message: 'Transaction deleted.' });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
