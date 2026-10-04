@@ -271,7 +271,7 @@ export default function Savings() {
         <div className="savings-grid">
           {/* Add / Edit Goal Form */}
           <div className="savings-card">
-            <h3><i className={`fa-solid ${editIdx >= 0 ? 'fa-pen-to-square' : 'fa-plus-circle'}`}></i> {editIdx >= 0 ? 'Edit Savings Goal' : 'Create New Goal'}</h3>
+            <h3><i className={`fa-solid ${editingGoal ? 'fa-pen-to-square' : 'fa-plus-circle'}`}></i> {editingGoal ? 'Edit Savings Goal' : 'Create New Goal'}</h3>
             <div className="form-group">
               <label>Goal Name</label>
               <input type="text" placeholder="e.g., Start Boutique Shop, Emergency Fund" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
