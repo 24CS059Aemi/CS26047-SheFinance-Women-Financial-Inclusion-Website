@@ -6,12 +6,35 @@ const { protect, adminOnly, optionalAuth } = require('../middleware/auth');
 // ─── POST /api/support (anyone can submit a ticket; attaches user ID if logged in) ─────
 router.post('/', optionalAuth, async (req, res) => {
   try {
-    const { name, email, category, subject, message, priority } = req.body;
-    if (!name || !email || !subject || !message) {
-      return res.status(400).json({ success: false, message: 'Name, email, subject and message are required.' });
+    const { category, subject, message, priority } = req.body;
+    let name = req.body.name || req.user?.name;
+    let email = req.body.email || req.user?.email;
+
+    if (!name || !email) {
+      if (req.user?.id) {
+        const User = require('../models/User');
+        const u = await User.findById(req.user.id);
+        if (u) {
+          name = name || u.name;
+          email = email || u.email;
+        }
+      }
+    }
+
+    if (!name) name = 'Registered User';
+    if (!email) email = 'user@shefinance.in';
+
+    if (!subject || !message) {
+      return res.status(400).json({ success: false, message: 'Subject and message are required.' });
     }
     const ticket = await SupportTicket.create({
-      userId: req.user?.id || null, name, email, category, subject, message, priority
+      userId: req.user?.id || null,
+      name,
+      email,
+      category: category || 'general',
+      subject,
+      message,
+      priority: priority || 'Medium'
     });
     res.status(201).json({ success: true, message: 'Support ticket submitted.', ticket });
   } catch (err) {
