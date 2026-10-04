@@ -65,7 +65,7 @@ export default function Chatbot() {
     try {
       const profile = JSON.parse(localStorage.getItem('userProfile') || '{}');
       const groqKey = localStorage.getItem('groqApiKey') || '';
-      const res = await fetch('http://localhost:5000/api/chatbot', {
+      const res = await fetch('/api/chatbot', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: msgText, user_profile: profile, api_key: groqKey }),
       });

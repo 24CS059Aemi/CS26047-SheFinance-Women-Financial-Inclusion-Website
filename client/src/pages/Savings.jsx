@@ -49,7 +49,7 @@ export default function Savings() {
   async function fetchPeerData() {
     try {
       const profile = JSON.parse(localStorage.getItem('userProfile') || '{}');
-      const res = await fetch('http://localhost:5000/api/predict_health', {
+      const res = await fetch('/api/predict_health', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ age: profile.age || 28, occupation: profile.occupation || 'salaried', income: profile.income || 30000 })
       });
@@ -124,7 +124,7 @@ export default function Savings() {
     }
     setLoadingPred(true);
     try {
-      const res = await fetch('http://localhost:5000/api/predict_timeline', {
+      const res = await fetch('/api/predict_timeline', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           target_amount: goal.targetAmount, saved_amount: goal.savedAmount,

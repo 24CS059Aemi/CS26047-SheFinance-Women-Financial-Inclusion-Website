@@ -34,7 +34,7 @@ export default function Register() {
     localStorage.setItem('userRole', form.role);
 
     try {
-      await fetch('http://localhost:3000/api/send-welcome', {
+      await fetch('/api/send-welcome', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: form.email, name: form.fullname })
