@@ -27,14 +27,42 @@ router.get('/', async (req, res) => {
 // ─── POST /api/transactions ──────────────────────────────────────────────────
 router.post('/', async (req, res) => {
   try {
-    const { type, category, amount, note, date } = req.body;
+    const { type, category, amount, note, description, date } = req.body;
     if (!type || !category || !amount) {
       return res.status(400).json({ success: false, message: 'Type, category and amount are required.' });
     }
     const tx = await Transaction.create({
-      userId: req.user.id, type, category, amount, note, date: date || new Date()
+      userId: req.user.id,
+      type,
+      category,
+      amount: Number(amount),
+      note: note || description || '',
+      date: date ? new Date(date) : new Date()
     });
     res.status(201).json({ success: true, transaction: tx });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// ─── PUT /api/transactions/:id ───────────────────────────────────────────────
+router.put('/:id', async (req, res) => {
+  try {
+    const { type, category, amount, note, description, date } = req.body;
+    const updateData = {};
+    if (type) updateData.type = type;
+    if (category) updateData.category = category;
+    if (amount !== undefined) updateData.amount = Number(amount);
+    if (note !== undefined || description !== undefined) updateData.note = note || description || '';
+    if (date) updateData.date = new Date(date);
+
+    const tx = await Transaction.findOneAndUpdate(
+      { _id: req.params.id, userId: req.user.id },
+      updateData,
+      { new: true }
+    );
+    if (!tx) return res.status(404).json({ success: false, message: 'Transaction not found.' });
+    res.json({ success: true, transaction: tx });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }

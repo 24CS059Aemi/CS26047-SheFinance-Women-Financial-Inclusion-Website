@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import DashboardNav from '../components/DashboardNav';
+import { transactionAPI, supportAPI } from '../api';
 
 const categoryIcons = {
   'Salary': 'fa-briefcase', 'Freelance': 'fa-briefcase', 'Business': 'fa-briefcase',
@@ -8,21 +9,23 @@ const categoryIcons = {
   'Transport': 'fa-car', 'Shopping': 'fa-bag-shopping', 'Bills': 'fa-bolt',
   'Health': 'fa-heart-pulse', 'Education': 'fa-graduation-cap', 'Entertainment': 'fa-film',
   'Other Income': 'fa-wallet', 'Other Expense': 'fa-ellipsis',
+  'Raw Materials': 'fa-boxes-stacked', 'Household Groceries': 'fa-basket-shopping',
+  'Education & Fees': 'fa-graduation-cap', 'Utilities & Bills': 'fa-bolt',
+  'Savings Contribution': 'fa-piggy-bank', 'Healthcare': 'fa-heart-pulse',
+  'Business Income': 'fa-store', 'Freewriting / Freelancing': 'fa-laptop', 'Government Grant': 'fa-landmark'
 };
 
-function getTransactions() { try { return JSON.parse(localStorage.getItem('sheFinanceTransactions') || '[]'); } catch { return []; } }
-function getBudgets() { try { return JSON.parse(localStorage.getItem('sheFinanceBudgets') || '{}'); } catch { return {}; } }
-
-function calcDashboard() {
-  const txs = getTransactions();
+function calcDashboard(txs = []) {
   const now = new Date();
   const currentMonthStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
   let totalBalance = 0, totalExpenseMonth = 0, totalIncomeMonth = 0;
   txs.forEach(tx => {
-    if (tx.type === 'income') totalBalance += tx.amount; else totalBalance -= tx.amount;
-    if (tx.date && tx.date.substring(0, 7) === currentMonthStr) {
-      if (tx.type === 'expense') totalExpenseMonth += tx.amount;
-      else if (tx.type === 'income') totalIncomeMonth += tx.amount;
+    const amt = Number(tx.amount) || 0;
+    if (tx.type === 'income') totalBalance += amt; else totalBalance -= amt;
+    const dateStr = typeof tx.date === 'string' ? tx.date : (tx.date ? new Date(tx.date).toISOString() : '');
+    if (dateStr && dateStr.substring(0, 7) === currentMonthStr) {
+      if (tx.type === 'expense') totalExpenseMonth += amt;
+      else if (tx.type === 'income') totalIncomeMonth += amt;
     }
   });
   let score = 50;
@@ -32,13 +35,6 @@ function calcDashboard() {
     else if (savingsRate > 10) score += 15;
     else if (savingsRate < 0) score -= 20;
   } else if (totalExpenseMonth > 0) score -= 30;
-  const budgets = getBudgets()[currentMonthStr] || {};
-  const totalBudget = Object.values(budgets).reduce((a, b) => a + b, 0);
-  if (totalBudget > 0) {
-    const budgetUsage = (totalExpenseMonth / totalBudget) * 100;
-    if (budgetUsage <= 90) score += 20;
-    else if (budgetUsage > 100) score -= 15;
-  }
   score = Math.max(10, Math.min(100, Math.round(score)));
   if (totalIncomeMonth === 0 && totalExpenseMonth === 0) score = 0;
   const recent = [...txs].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 3);
@@ -54,41 +50,76 @@ export default function Dashboard() {
   const [tickets, setTickets] = useState([]);
   const [toast, setToast] = useState('');
 
+  async function loadDashboardData() {
+    try {
+      const res = await transactionAPI.getAll();
+      const txList = (res.transactions || []).map(t => ({
+        ...t,
+        description: t.note || t.description || t.category || '',
+        date: t.date ? t.date.split('T')[0] : '',
+        amount: Number(t.amount) || 0
+      }));
+      setData(calcDashboard(txList));
+      localStorage.setItem('sheFinanceTransactions', JSON.stringify(txList));
+    } catch (err) {
+      const cached = JSON.parse(localStorage.getItem('sheFinanceTransactions') || '[]');
+      setData(calcDashboard(cached));
+    }
+  }
+
+  async function loadTickets() {
+    try {
+      const res = await supportAPI.myTickets();
+      if (res.tickets) setTickets(res.tickets);
+      else fallbackTickets();
+    } catch {
+      fallbackTickets();
+    }
+  }
+
+  function fallbackTickets() {
+    const userEmail = localStorage.getItem('userEmail') || '';
+    const all = JSON.parse(localStorage.getItem('sheFinanceTickets') || '[]');
+    setTickets(all.filter(t => t.email === userEmail).reverse());
+  }
+
   useEffect(() => {
     const name = localStorage.getItem('userName') || 'User';
     const formatted = name.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
     setUserName(formatted);
     const saved = localStorage.getItem('userAvatar');
     setAvatar(saved || `https://ui-avatars.com/api/?name=${encodeURIComponent(formatted)}&background=c99f55&color=fff`);
-    setData(calcDashboard());
+    loadDashboardData();
     const ann = localStorage.getItem('globalAnnouncement');
     if (ann) setAnnouncement(ann);
     loadTickets();
   }, []);
 
-  function loadTickets() {
-    const userEmail = localStorage.getItem('userEmail') || '';
-    const all = JSON.parse(localStorage.getItem('sheFinanceTickets') || '[]');
-    setTickets(all.filter(t => t.email === userEmail).reverse());
-  }
-
-  function submitTicket(e) {
+  async function submitTicket(e) {
     e.preventDefault();
     if (!ticket.subject.trim() || !ticket.message.trim()) return;
-    const userName = localStorage.getItem('userName') || 'User';
-    const userEmail = localStorage.getItem('userEmail') || '';
-    const all = JSON.parse(localStorage.getItem('sheFinanceTickets') || '[]');
-    const newT = {
-      id: 'TCK-' + Math.floor(100 + Math.random() * 900),
-      name: userName, user: userName, email: userEmail,
-      subject: ticket.subject, msg: ticket.message, message: ticket.message,
-      date: new Date().toISOString().split('T')[0], status: 'pending', reply: ''
-    };
-    all.push(newT);
-    localStorage.setItem('sheFinanceTickets', JSON.stringify(all));
-    setTicket({ subject: '', message: '' });
-    showToast('Ticket submitted successfully! Our team will respond soon.');
-    loadTickets();
+    try {
+      await supportAPI.submit({ subject: ticket.subject, message: ticket.message, category: 'General' });
+      setTicket({ subject: '', message: '' });
+      showToast('Ticket submitted successfully! Our team will respond soon.');
+      loadTickets();
+    } catch (err) {
+      // Local fallback
+      const uName = localStorage.getItem('userName') || 'User';
+      const uEmail = localStorage.getItem('userEmail') || '';
+      const all = JSON.parse(localStorage.getItem('sheFinanceTickets') || '[]');
+      const newT = {
+        _id: 'TCK-' + Math.floor(100 + Math.random() * 900),
+        name: uName, user: uName, email: uEmail,
+        subject: ticket.subject, message: ticket.message,
+        date: new Date().toISOString().split('T')[0], status: 'pending', reply: ''
+      };
+      all.push(newT);
+      localStorage.setItem('sheFinanceTickets', JSON.stringify(all));
+      setTicket({ subject: '', message: '' });
+      showToast('Ticket submitted successfully!');
+      loadTickets();
+    }
   }
 
   function showToast(msg) {

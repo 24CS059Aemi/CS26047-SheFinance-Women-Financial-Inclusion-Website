@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import DashboardNav from '../components/DashboardNav';
+import { transactionAPI } from '../api';
 
 const INCOME_CATEGORIES = ['Salary', 'Freelance', 'Business', 'Investment', 'Other Income'];
 const EXPENSE_CATEGORIES = ['Food', 'Rent', 'Transport', 'Shopping', 'Bills', 'Health', 'Education', 'Entertainment', 'Other Expense'];
@@ -12,15 +13,17 @@ const categoryIcons = {
   'Food': 'fa-cart-shopping', 'Rent': 'fa-house', 'Transport': 'fa-car',
   'Shopping': 'fa-bag-shopping', 'Bills': 'fa-bolt', 'Health': 'fa-heart-pulse',
   'Education': 'fa-graduation-cap', 'Entertainment': 'fa-film', 'Other Expense': 'fa-ellipsis',
+  'Raw Materials': 'fa-boxes-stacked', 'Household Groceries': 'fa-basket-shopping',
+  'Education & Fees': 'fa-graduation-cap', 'Utilities & Bills': 'fa-bolt',
+  'Savings Contribution': 'fa-piggy-bank', 'Healthcare': 'fa-heart-pulse',
+  'Business Income': 'fa-store', 'Freewriting / Freelancing': 'fa-laptop', 'Government Grant': 'fa-landmark'
 };
-
-function getTxs() { try { return JSON.parse(localStorage.getItem('sheFinanceTransactions') || '[]'); } catch { return []; } }
-function saveTxs(txs) { localStorage.setItem('sheFinanceTransactions', JSON.stringify(txs)); }
 
 const defaultForm = { type: 'income', description: '', amount: '', category: 'Salary', date: new Date().toISOString().split('T')[0] };
 
 export default function Tracker() {
   const [txs, setTxs] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [filterType, setFilterType] = useState('all');
   const [filterCat, setFilterCat] = useState('all');
   const [filterMonth, setFilterMonth] = useState(() => {
@@ -28,14 +31,39 @@ export default function Tracker() {
     return now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
   });
   const [showModal, setShowModal] = useState(false);
-  const [editIdx, setEditIdx] = useState(-1);
+  const [editingTx, setEditingTx] = useState(null);
   const [form, setForm] = useState(defaultForm);
   const [toast, setToast] = useState('');
   const [userName, setUserName] = useState('User');
   const [avatar, setAvatar] = useState('');
 
+  async function loadTransactions() {
+    setLoading(true);
+    try {
+      const res = await transactionAPI.getAll();
+      const list = (res.transactions || []).map(t => ({
+        ...t,
+        description: t.note || t.description || t.category || '',
+        date: t.date ? t.date.split('T')[0] : '',
+        amount: Number(t.amount) || 0
+      }));
+      setTxs(list);
+      localStorage.setItem('sheFinanceTransactions', JSON.stringify(list));
+    } catch (err) {
+      console.warn('API error, falling back to cached local storage:', err.message);
+      try {
+        const cached = JSON.parse(localStorage.getItem('sheFinanceTransactions') || '[]');
+        setTxs(cached);
+      } catch (e) {
+        setTxs([]);
+      }
+    } finally {
+      setLoading(false);
+    }
+  }
+
   useEffect(() => {
-    setTxs(getTxs());
+    loadTransactions();
     const name = localStorage.getItem('userName') || 'User';
     const formatted = name.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
     setUserName(formatted);
@@ -58,46 +86,88 @@ export default function Tracker() {
   const net = totalIncome - totalExpense;
 
   function openAdd() {
-    setEditIdx(-1);
+    setEditingTx(null);
     setForm(defaultForm);
     setShowModal(true);
   }
 
-  function openEdit(tx, idx) {
-    setEditIdx(idx);
-    setForm({ type: tx.type, description: tx.description, amount: String(tx.amount), category: tx.category, date: tx.date });
+  function openEdit(tx) {
+    setEditingTx(tx);
+    setForm({
+      type: tx.type,
+      description: tx.description || tx.note || '',
+      amount: String(tx.amount),
+      category: tx.category,
+      date: tx.date
+    });
     setShowModal(true);
   }
 
-  function handleDelete(idx) {
+  async function handleDelete(tx) {
     if (!window.confirm('Delete this transaction?')) return;
-    const updated = [...txs];
-    updated.splice(idx, 1);
-    saveTxs(updated);
-    setTxs(updated);
-    showToast('Transaction deleted!');
+    try {
+      if (tx._id) {
+        await transactionAPI.delete(tx._id);
+      }
+      const updated = txs.filter(t => t !== tx && t._id !== tx._id);
+      setTxs(updated);
+      localStorage.setItem('sheFinanceTransactions', JSON.stringify(updated));
+      showToast('Transaction deleted from database!');
+    } catch (err) {
+      alert('Delete failed: ' + err.message);
+    }
   }
 
-  function handleSave() {
+  async function handleSave() {
     if (!form.description.trim() || !form.amount || parseFloat(form.amount) <= 0 || !form.date) {
       alert('Please fill in all fields with valid values.');
       return;
     }
-    const tx = { ...form, amount: parseFloat(form.amount) };
-    const updated = [...txs];
-    if (editIdx >= 0) { updated[editIdx] = tx; showToast('Transaction updated!'); }
-    else { updated.push(tx); showToast('Transaction added!'); }
-    saveTxs(updated);
-    setTxs(updated);
-    setShowModal(false);
+    const payload = {
+      type: form.type,
+      category: form.category,
+      amount: parseFloat(form.amount),
+      note: form.description,
+      description: form.description,
+      date: form.date
+    };
+
+    try {
+      if (editingTx && editingTx._id) {
+        const res = await transactionAPI.update(editingTx._id, payload);
+        const updatedDoc = {
+          ...res.transaction,
+          description: res.transaction.note || form.description,
+          date: res.transaction.date ? res.transaction.date.split('T')[0] : form.date,
+          amount: Number(res.transaction.amount)
+        };
+        const updated = txs.map(t => (t._id === editingTx._id ? updatedDoc : t));
+        setTxs(updated);
+        localStorage.setItem('sheFinanceTransactions', JSON.stringify(updated));
+        showToast('Transaction updated in database!');
+      } else {
+        const res = await transactionAPI.create(payload);
+        const newDoc = {
+          ...res.transaction,
+          description: res.transaction.note || form.description,
+          date: res.transaction.date ? res.transaction.date.split('T')[0] : form.date,
+          amount: Number(res.transaction.amount)
+        };
+        const updated = [newDoc, ...txs];
+        setTxs(updated);
+        localStorage.setItem('sheFinanceTransactions', JSON.stringify(updated));
+        showToast('Transaction saved to database!');
+      }
+      setShowModal(false);
+    } catch (err) {
+      alert('Failed to save to database: ' + err.message);
+    }
   }
 
   function showToast(msg) {
     setToast(msg);
     setTimeout(() => setToast(''), 3000);
   }
-
-  // Find original index in full txs array
   function origIdx(tx) { return txs.indexOf(tx); }
 
   return (
@@ -185,7 +255,7 @@ export default function Tracker() {
                   const dateStr = new Date(tx.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
                   const isIncome = tx.type === 'income';
                   return (
-                    <tr key={i}>
+                    <tr key={tx._id || i}>
                       <td>{dateStr}</td>
                       <td>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -208,10 +278,10 @@ export default function Tracker() {
                       </td>
                       <td>
                         <div className="tx-actions">
-                          <button className="btn-edit" title="Edit" onClick={() => openEdit(tx, oi)}>
+                          <button className="btn-edit" title="Edit" onClick={() => openEdit(tx)}>
                             <i className="fa-solid fa-pen"></i>
                           </button>
-                          <button className="btn-delete" title="Delete" onClick={() => handleDelete(oi)}>
+                          <button className="btn-delete" title="Delete" onClick={() => handleDelete(tx)}>
                             <i className="fa-solid fa-trash"></i>
                           </button>
                         </div>

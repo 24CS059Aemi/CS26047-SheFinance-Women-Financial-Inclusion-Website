@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import DashboardNav from '../components/DashboardNav';
+import { transactionAPI } from '../api';
 
 export default function Reports() {
   const [userName, setUserName] = useState('User');
@@ -23,7 +24,7 @@ export default function Reports() {
     const savedAvatar = localStorage.getItem('userAvatar');
     setAvatar(savedAvatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(formatted)}&background=c99f55&color=fff`);
 
-    calculateReports();
+    loadAndCalculateReports();
 
     return () => {
       if (expenseChartInstance.current) expenseChartInstance.current.destroy();
@@ -31,11 +32,20 @@ export default function Reports() {
     };
   }, []);
 
-  function getTransactions() {
+  async function loadAndCalculateReports() {
     try {
-      return JSON.parse(localStorage.getItem('sheFinanceTransactions') || '[]');
+      const res = await transactionAPI.getAll();
+      const txs = (res.transactions || []).map(t => ({
+        ...t,
+        description: t.note || t.description || t.category || '',
+        date: t.date ? t.date.split('T')[0] : '',
+        amount: Number(t.amount) || 0
+      }));
+      localStorage.setItem('sheFinanceTransactions', JSON.stringify(txs));
+      calculateReportsWithTxs(txs);
     } catch {
-      return [];
+      const cached = JSON.parse(localStorage.getItem('sheFinanceTransactions') || '[]');
+      calculateReportsWithTxs(cached);
     }
   }
 
@@ -47,8 +57,7 @@ export default function Reports() {
     }
   }
 
-  function calculateReports() {
-    const txs = getTransactions();
+  function calculateReportsWithTxs(txs) {
     const now = new Date();
     const currentMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 

@@ -51,6 +51,7 @@ export const transactionAPI = {
   getAll:  (month) => apiFetch(`/transactions${month ? `?month=${month}` : ''}`),
   summary: ()      => apiFetch('/transactions/summary'),
   create:  (body)  => apiFetch('/transactions', { method: 'POST', body: JSON.stringify(body) }),
+  update:  (id, body) => apiFetch(`/transactions/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
   delete:  (id)    => apiFetch(`/transactions/${id}`, { method: 'DELETE' }),
 };
 
