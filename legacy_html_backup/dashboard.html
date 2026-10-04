@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - SheFinance</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body class="dashboard-body">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <a href="index.html">
+                <h2>She<span>Finance</span></h2>
+            </a>
+        </div>
+        <ul class="sidebar-menu">
+            <li class="active"><a href="dashboard.html"><i class="fa-solid fa-house"></i> Overview</a></li>
+            <li><a href="tracker.html"><i class="fa-solid fa-money-bill-transfer"></i> Income & Expense</a></li>
+            <li><a href="budget.html"><i class="fa-solid fa-wallet"></i> Budget Planner</a></li>
+            <li><a href="savings.html"><i class="fa-solid fa-bullseye"></i> Savings Goals</a></li>
+            <li><a href="chatbot.html"><i class="fa-solid fa-robot"></i> AI Chatbot</a></li>
+            <li><a href="education.html"><i class="fa-solid fa-book-open-reader"></i> Education Hub</a></li>
+            <li><a href="reports.html"><i class="fa-solid fa-chart-pie"></i> Reports</a></li>
+            <li><a href="#help-support" onclick="document.getElementById('help-support-section').scrollIntoView({behavior:'smooth'}); return false;"><i class="fa-solid fa-headset"></i> Help & Support</a></li>
+        </ul>
+        <div class="sidebar-bottom">
+            <a href="index.html" class="logout-btn" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i>
+                Logout</a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="dashboard-main">
+        <!-- Header -->
+        <header class="dashboard-header">
+            <div class="header-title">
+                <h2 id="welcome-msg">Welcome back! 👋</h2>
+                <p>Here is your financial summary for this month.</p>
+            </div>
+            <a href="profile.html" class="header-profile-link" title="Click to manage Profile & Settings">
+                <div class="header-profile">
+                    <div class="profile-pic-wrapper">
+                        <img id="profile-img" src="https://ui-avatars.com/api/?name=User&background=c99f55&color=fff" alt="Profile">
+                        <span class="profile-badge-icon"><i class="fa-solid fa-gear"></i></span>
+                    </div>
+                    <div class="header-user-info">
+                        <span id="user-name" class="user-name">User</span>
+                        <span class="profile-hint-text">Manage Profile <i class="fa-solid fa-chevron-right"></i></span>
+                    </div>
+                </div>
+            </a>
+        </header>
+
+        <!-- Global Announcement Banner -->
+        <div id="global-announcement-banner" style="display:none; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: #fff; padding: 14px 25px; border-radius: 12px; margin: 0 40px 25px; font-weight: 500; font-size: 0.95rem; box-shadow: 0 6px 15px rgba(0,0,0,0.1); align-items: center; justify-content: space-between;">
+            <div style="display:flex; align-items:center; gap: 12px;"><i class="fa-solid fa-bullhorn" style="font-size: 1.2rem; color: #fff;"></i> <span id="global-announcement-text"></span></div>
+            <i class="fa-solid fa-xmark" style="cursor: pointer; opacity: 0.8; padding:5px;" onclick="this.parentElement.style.display='none'" title="Dismiss"></i>
+        </div>
+
+        <!-- Dashboard Content -->
+        <section class="dashboard-content">
+            <!-- Summary Cards -->
+            <div class="summary-cards">
+                <div class="card balance-card">
+                    <div class="card-icon"><i class="fa-solid fa-wallet"></i></div>
+                    <h3>Total Balance</h3>
+                    <h2 id="db-total-balance">₹ 0</h2>
+                    <p class="positive" id="db-balance-trend"><i class="fa-solid fa-arrow-trend-up"></i> Net Savings</p>
+                </div>
+                <div class="card expense-card">
+                    <div class="card-icon"><i class="fa-solid fa-chart-line"></i></div>
+                    <h3>Monthly Expenses</h3>
+                    <h2 id="db-monthly-expenses">₹ 0</h2>
+                    <p class="negative" id="db-expense-trend">This month</p>
+                </div>
+                <div class="card health-card">
+                    <div class="card-icon"><i class="fa-solid fa-heart-pulse"></i></div>
+                    <h3>Financial Health</h3>
+                    <h2 id="db-health-score">0 / 100</h2>
+                    <p class="positive" id="db-health-status">Add transactions to calculate</p>
+                </div>
+            </div>
+
+            <!-- Bottom Widgets -->
+            <div class="dashboard-widgets">
+                <!-- Recent Transactions -->
+                <div class="widget">
+                    <h3>Recent Transactions</h3>
+                    <ul class="transaction-list" id="db-transaction-list">
+                        <!-- Populated dynamically -->
+                    </ul>
+                </div>
+                <!-- AI Prediction -->
+                <div class="widget ai-widget">
+                    <h3><i class="fa-solid fa-wand-magic-sparkles"></i> AI Savings Prediction</h3>
+                    <div class="ai-box" id="db-ai-box">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Help & Support Section -->
+            <div class="dashboard-widgets" id="help-support-section" style="margin-top:30px;">
+                <div class="widget" style="flex:1;">
+                    <h3><i class="fa-solid fa-headset" style="color:var(--secondary-color);margin-right:8px;"></i> Help & Support</h3>
+                    <p style="color:#888;font-size:0.9rem;margin-bottom:18px;">Have a financial question or need help? Submit your query below and our team will respond.</p>
+                    <div id="support-form-area">
+                        <div style="margin-bottom:14px;">
+                            <label style="font-size:0.82rem;font-weight:600;color:#666;display:block;margin-bottom:5px;">Subject / Topic</label>
+                            <input type="text" id="support-subject" placeholder="e.g., How to apply for Mudra Yojana?" style="width:100%;padding:10px 14px;border:1px solid #ddd;border-radius:8px;font-family:'Outfit',sans-serif;font-size:0.9rem;box-sizing:border-box;outline:none;">
+                        </div>
+                        <div style="margin-bottom:14px;">
+                            <label style="font-size:0.82rem;font-weight:600;color:#666;display:block;margin-bottom:5px;">Describe your question or issue</label>
+                            <textarea id="support-message" rows="4" placeholder="Tell us how we can help you..." style="width:100%;padding:10px 14px;border:1px solid #ddd;border-radius:8px;font-family:'Outfit',sans-serif;font-size:0.9rem;box-sizing:border-box;outline:none;resize:vertical;"></textarea>
+                        </div>
+                        <button onclick="submitSupportTicket()" class="btn btn-primary" style="padding:10px 24px;font-size:0.92rem;"><i class="fa-solid fa-paper-plane"></i> Submit Ticket</button>
+                    </div>
+                    <!-- My Past Tickets -->
+                    <div id="my-tickets-area" style="margin-top:22px;"></div>
+                </div>
+                <div class="widget" style="flex:0.6;">
+                    <h3><i class="fa-solid fa-circle-question" style="color:var(--secondary-color);margin-right:8px;"></i> Quick Help</h3>
+                    <div style="display:flex;flex-direction:column;gap:12px;margin-top:10px;">
+                        <a href="chatbot.html" style="display:flex;align-items:center;gap:10px;padding:12px 15px;background:#f8f9fb;border-radius:10px;color:var(--primary-color);font-weight:500;font-size:0.9rem;transition:all 0.2s;"><i class="fa-solid fa-robot" style="color:var(--secondary-color);font-size:1.1rem;"></i> Ask AI Chatbot</a>
+                        <a href="education.html" style="display:flex;align-items:center;gap:10px;padding:12px 15px;background:#f8f9fb;border-radius:10px;color:var(--primary-color);font-weight:500;font-size:0.9rem;transition:all 0.2s;"><i class="fa-solid fa-book-open" style="color:var(--secondary-color);font-size:1.1rem;"></i> Education Hub & Guides</a>
+                        <a href="education.html#govt-schemes" style="display:flex;align-items:center;gap:10px;padding:12px 15px;background:#f8f9fb;border-radius:10px;color:var(--primary-color);font-weight:500;font-size:0.9rem;transition:all 0.2s;"><i class="fa-solid fa-landmark" style="color:var(--secondary-color);font-size:1.1rem;"></i> Government Schemes</a>
+                        <div style="padding:14px 15px;background:linear-gradient(135deg,rgba(201,159,85,0.08),rgba(201,159,85,0.02));border-radius:10px;border:1px solid rgba(201,159,85,0.15);">
+                            <p style="font-size:0.82rem;color:#888;margin:0;"><i class="fa-solid fa-phone" style="color:var(--secondary-color);margin-right:6px;"></i> <strong>Women Helpline:</strong> 181</p>
+                            <p style="font-size:0.82rem;color:#888;margin:4px 0 0;"><i class="fa-solid fa-shield" style="color:var(--secondary-color);margin-right:6px;"></i> <strong>Cyber Crime:</strong> 1930</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var storedName = localStorage.getItem('userName');
+            // Fallback to formatted email name if not set
+            var userName = storedName || (function () {
+                var email = localStorage.getItem('userEmail') || '';
+                var raw = email.split('@')[0].replace(/[._]/g, ' ');
+                return raw.charAt(0).toUpperCase() + raw.slice(1);
+            })();
+            if (userName) {
+                // Capitalize each word for nice display
+                var formattedName = userName.split(' ').map(function (w) { return w.charAt(0).toUpperCase() + w.slice(1); }).join(' ');
+                // Set the Welcome text
+                document.getElementById('welcome-msg').innerText = "Welcome back, " + formattedName + "! 👋";
+                // Set the user name next to avatar
+                var nameSpan = document.getElementById('user-name');
+                if (nameSpan) { nameSpan.innerText = formattedName; }
+                // Set the Profile Image with custom upload or fallback to initials
+                var savedAvatar = localStorage.getItem('userAvatar');
+                if (savedAvatar) {
+                    document.getElementById('profile-img').src = savedAvatar;
+                } else {
+                    document.getElementById('profile-img').src = "https://ui-avatars.com/api/?name=" + encodeURIComponent(formattedName) + "&background=c99f55&color=fff";
+                }
+            }
+
+            // Load live dashboard metrics
+            loadDashboardData();
+
+            // Load Global Announcement
+            var ann = localStorage.getItem('globalAnnouncement');
+            if (ann) {
+                var banner = document.getElementById('global-announcement-banner');
+                if (banner) {
+                    document.getElementById('global-announcement-text').textContent = ann;
+                    banner.style.display = 'flex';
+                }
+            }
+        });
+
+        function getTransactions() { try { return JSON.parse(localStorage.getItem('sheFinanceTransactions') || '[]'); } catch (e) { return []; } }
+        function getBudgets() { try { return JSON.parse(localStorage.getItem('sheFinanceBudgets') || '{}'); } catch (e) { return {}; } }
+
+        function loadDashboardData() {
+            var txs = getTransactions();
+            var now = new Date();
+            var currentMonthStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+
+            // 1. Calculate Balances
+            var totalBalance = 0;
+            var totalExpenseMonth = 0;
+            var totalIncomeMonth = 0;
+
+            txs.forEach(function (tx) {
+                if (tx.type === 'income') {
+                    totalBalance += tx.amount;
+                } else {
+                    totalBalance -= tx.amount;
+                }
+
+                // Month filter
+                if (tx.date && tx.date.substring(0, 7) === currentMonthStr) {
+                    if (tx.type === 'expense') {
+                        totalExpenseMonth += tx.amount;
+                    } else if (tx.type === 'income') {
+                        totalIncomeMonth += tx.amount;
+                    }
+                }
+            });
+
+            // Update UI Balance Cards
+            document.getElementById('db-total-balance').textContent = '₹ ' + totalBalance.toLocaleString('en-IN');
+            document.getElementById('db-monthly-expenses').textContent = '₹ ' + totalExpenseMonth.toLocaleString('en-IN');
+
+            // Set balance card text based on surplus
+            var balanceTrend = document.getElementById('db-balance-trend');
+            if (totalBalance >= 0) {
+                balanceTrend.className = "positive";
+                balanceTrend.innerHTML = '<i class="fa-solid fa-arrow-trend-up"></i> Net Savings';
+            } else {
+                balanceTrend.className = "negative";
+                balanceTrend.innerHTML = '<i class="fa-solid fa-arrow-trend-down"></i> Overdrawn!';
+            }
+
+            // 2. Financial Health Score calculation
+            var score = 50; // Base score
+            if (totalIncomeMonth > 0) {
+                var savingsRate = ((totalIncomeMonth - totalExpenseMonth) / totalIncomeMonth) * 100;
+                if (savingsRate > 20) score += 30;
+                else if (savingsRate > 10) score += 15;
+                else if (savingsRate < 0) score -= 20;
+            } else if (totalExpenseMonth > 0) {
+                score -= 30;
+            }
+
+            // Budget adherence
+            var budgets = getBudgets()[currentMonthStr] || {};
+            var totalBudget = Object.values(budgets).reduce((a, b) => a + b, 0);
+            if (totalBudget > 0) {
+                var budgetUsage = (totalExpenseMonth / totalBudget) * 100;
+                if (budgetUsage <= 90) score += 20;
+                else if (budgetUsage > 100) score -= 15;
+            }
+
+            score = Math.max(10, Math.min(100, Math.round(score)));
+            if (totalIncomeMonth === 0 && totalExpenseMonth === 0) {
+                score = 0;
+            }
+
+            // Update Health Score UI
+            var scoreEl = document.getElementById('db-health-score');
+            var statusEl = document.getElementById('db-health-status');
+            scoreEl.innerText = score === 0 ? "N/A" : score + " / 100";
+            if (score === 0) {
+                statusEl.innerText = "No transactions this month";
+                statusEl.style.color = "var(--text-light)";
+            } else if (score >= 80) {
+                statusEl.innerText = "Excellent! Keep saving.";
+                statusEl.style.color = "#2ecc71";
+            } else if (score >= 50) {
+                statusEl.innerText = "Fair. Try reducing wants.";
+                statusEl.style.color = "#f39c12";
+            } else {
+                statusEl.innerText = "Critical. Check budget!";
+                statusEl.style.color = "#e74c3c";
+            }
+
+            // 3. Render 3 Recent Transactions
+            var txListEl = document.getElementById('db-transaction-list');
+            if (txs.length === 0) {
+                txListEl.innerHTML = '<li style="text-align:center;color:var(--text-light);padding:20px 0;">No transactions recorded yet.</li>';
+            } else {
+                // Sort by date desc
+                var sortedTxs = [...txs].sort((a, b) => new Date(b.date) - new Date(a.date));
+                var recent = sortedTxs.slice(0, 3);
+                var txHtml = '';
+
+                var categoryIcons = {
+                    'Salary': 'fa-briefcase',
+                    'Freelance': 'fa-briefcase',
+                    'Business': 'fa-briefcase',
+                    'Investment': 'fa-arrow-trend-up',
+                    'Food': 'fa-cart-shopping',
+                    'Rent': 'fa-house',
+                    'Transport': 'fa-car',
+                    'Shopping': 'fa-bag-shopping',
+                    'Bills': 'fa-bolt',
+                    'Health': 'fa-heart-pulse',
+                    'Education': 'fa-graduation-cap',
+                    'Entertainment': 'fa-film',
+                    'Other Income': 'fa-wallet',
+                    'Other Expense': 'fa-ellipsis'
+                };
+
+                recent.forEach(function (tx) {
+                    var icon = categoryIcons[tx.category] || 'fa-receipt';
+                    var txClass = tx.type === 'income' ? 'positive' : 'negative';
+                    var sign = tx.type === 'income' ? '+' : '-';
+                    txHtml += '<li>';
+                    txHtml += '<div class="tx-info"><div class="tx-icon"><i class="fa-solid ' + icon + '"></i></div> ' + tx.description + '</div>';
+                    txHtml += '<div class="tx-amount ' + txClass + '">' + sign + ' ₹ ' + tx.amount.toLocaleString('en-IN') + '</div>';
+                    txHtml += '</li>';
+                });
+                txListEl.innerHTML = txHtml;
+            }
+
+            // 4. Dynamic AI Savings Recommendation
+            var aiBoxEl = document.getElementById('db-ai-box');
+            var currentSavings = totalIncomeMonth - totalExpenseMonth;
+
+            if (totalIncomeMonth === 0 && totalExpenseMonth === 0) {
+                aiBoxEl.innerHTML = `
+                    <p>Start logging your income and expenses to unlock live AI budgeting tips and financial scores! ✨</p>
+                    <a href="tracker.html" class="btn btn-primary" style="margin-top: 15px;">Log Transaction</a>
+                `;
+            } else if (currentSavings <= 0) {
+                aiBoxEl.innerHTML = `
+                    <p>🚨 Your monthly spending exceeds your income! You have spent <strong>₹${Math.abs(currentSavings).toLocaleString('en-IN')}</strong> more than you earned.</p>
+                    <p><em>AI Tip: Go to the Budget Planner and set strict limits on luxury wants (like Shopping or Dining out).</em></p>
+                    <a href="budget.html" class="btn btn-primary" style="margin-top: 15px;">Plan Budget</a>
+                `;
+            } else {
+                var savingsPercent = Math.round((currentSavings / totalIncomeMonth) * 100);
+                aiBoxEl.innerHTML = `
+                    <p>Based on your current spending, you are saving <strong>₹${currentSavings.toLocaleString('en-IN')}</strong> (${savingsPercent}%) of your income this month! ✨</p>
+                    <p><em>AI Tip: Excellent surplus! Consider locking ₹${Math.round(currentSavings * 0.4).toLocaleString('en-IN')} into a Savings Goal or Recurring Deposit.</em></p>
+                    <a href="savings.html" class="btn btn-primary" style="margin-top: 15px;">Set Savings Goal</a>
+                `;
+            }
+        }
+
+        function logout() {
+            // Only clear auth session — financial data stays safe!
+            localStorage.removeItem('userName');
+            localStorage.removeItem('userEmail');
+            localStorage.removeItem('userAvatar');
+            localStorage.removeItem('userProfile');
+        }
+
+        // ===== HELP & SUPPORT TICKET SYSTEM =====
+        function submitSupportTicket() {
+            var subject = document.getElementById('support-subject').value.trim();
+            var message = document.getElementById('support-message').value.trim();
+            if (!subject || !message) { alert('Please fill in both subject and message.'); return; }
+            var userName = localStorage.getItem('userName') || 'User';
+            var userEmail = localStorage.getItem('userEmail') || 'user@shefinance.com';
+            var tickets = JSON.parse(localStorage.getItem('sheFinanceTickets') || '[]');
+            var newTicket = {
+                id: 'TCK-' + Math.floor(100 + Math.random() * 900),
+                name: userName,
+                user: userName,
+                email: userEmail,
+                subject: subject,
+                msg: message,
+                message: message,
+                date: new Date().toISOString().split('T')[0],
+                status: 'pending',
+                reply: ''
+            };
+            tickets.push(newTicket);
+            localStorage.setItem('sheFinanceTickets', JSON.stringify(tickets));
+            document.getElementById('support-subject').value = '';
+            document.getElementById('support-message').value = '';
+            showSupportToast('Ticket submitted successfully! Our team will respond soon.');
+            renderMyTickets();
+        }
+
+        function renderMyTickets() {
+            var userEmail = localStorage.getItem('userEmail') || '';
+            var tickets = JSON.parse(localStorage.getItem('sheFinanceTickets') || '[]');
+            var myTickets = tickets.filter(function(t) { return t.email === userEmail; });
+            var area = document.getElementById('my-tickets-area');
+            if (myTickets.length === 0) { area.innerHTML = ''; return; }
+            var html = '<h4 style="margin:0 0 12px;color:var(--primary-color);font-size:0.95rem;"><i class="fa-solid fa-ticket" style="color:var(--secondary-color);margin-right:6px;"></i>My Tickets</h4>';
+            myTickets.reverse().forEach(function(t) {
+                var statusBadge = t.status === 'resolved'
+                    ? '<span style="background:rgba(46,204,113,0.12);color:#2ecc71;padding:3px 10px;border-radius:12px;font-size:0.75rem;font-weight:600;">✅ Resolved</span>'
+                    : '<span style="background:rgba(243,156,18,0.14);color:#d68910;padding:3px 10px;border-radius:12px;font-size:0.75rem;font-weight:600;">🕐 Pending</span>';
+                html += '<div style="background:#f8f9fb;padding:14px 16px;border-radius:10px;margin-bottom:10px;">';
+                html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;"><strong style="font-size:0.88rem;color:var(--primary-color);">' + t.subject + '</strong>' + statusBadge + '</div>';
+                html += '<p style="font-size:0.82rem;color:#888;margin:0;">' + t.id + ' · ' + t.date + '</p>';
+                if (t.reply) {
+                    html += '<div style="margin-top:10px;padding:10px 14px;background:rgba(46,204,113,0.06);border-left:3px solid #2ecc71;border-radius:6px;"><p style="font-size:0.82rem;color:#555;margin:0;"><i class="fa-solid fa-reply" style="color:#2ecc71;margin-right:6px;"></i><strong>Admin Reply:</strong> ' + t.reply + '</p></div>';
+                }
+                html += '</div>';
+            });
+            area.innerHTML = html;
+        }
+
+        function showSupportToast(msg) {
+            var toast = document.createElement('div');
+            toast.style.cssText = 'position:fixed;bottom:30px;right:30px;background:var(--primary-color);color:#fff;padding:14px 24px;border-radius:10px;font-size:0.9rem;font-weight:500;box-shadow:0 8px 24px rgba(0,0,0,0.2);z-index:9999;display:flex;align-items:center;gap:10px;animation:fadeIn 0.3s ease;';
+            toast.innerHTML = '<i class="fa-solid fa-check-circle"></i> ' + msg;
+            document.body.appendChild(toast);
+            setTimeout(function() { toast.remove(); }, 3500);
+        }
+
+        // Load tickets on page load
+        renderMyTickets();
+
+        // Sticky navbar scroll effect
+        window.addEventListener('scroll', function () {
+            var sidebar = document.querySelector('.sidebar');
+            if (sidebar) {
+                if (window.scrollY > 10) {
+                    sidebar.classList.add('scrolled');
+                } else {
+                    sidebar.classList.remove('scrolled');
+                }
+            }
+        });
+    </script>
+    <script src="chatbot_widget.js"></script>
+</body>
+
+</html>
