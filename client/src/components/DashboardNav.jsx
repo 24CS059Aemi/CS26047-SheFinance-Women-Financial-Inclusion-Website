@@ -23,11 +23,14 @@ export default function DashboardNav() {
   }, []);
 
   function logout() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('userRole');
+    localStorage.removeItem('userId');
     localStorage.removeItem('userName');
     localStorage.removeItem('userEmail');
     localStorage.removeItem('userAvatar');
     localStorage.removeItem('userProfile');
-    navigate('/');
+    navigate('/login');
   }
 
   return (
