@@ -15,15 +15,17 @@ import Admin from './pages/Admin';
 import Support from './pages/Support';
 
 function ProtectedRoute({ children }) {
+  const token = localStorage.getItem('token');
   const userName = localStorage.getItem('userName');
-  if (!userName) return <Navigate to="/login" replace />;
+  if (!token && !userName) return <Navigate to="/login" replace />;
   return children;
 }
 
 function AdminRoute({ children }) {
+  const token = localStorage.getItem('token');
   const role = localStorage.getItem('userRole');
   const userName = localStorage.getItem('userName');
-  if (!userName) return <Navigate to="/login" replace />;
+  if (!token && !userName) return <Navigate to="/login" replace />;
   if (role !== 'admin') return <Navigate to="/dashboard" replace />;
   return children;
 }

@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { authAPI } from '../api';
 
 export default function Register() {
   const [form, setForm] = useState({ fullname: '', mobile: '', email: '', role: 'user', password: '', confirm_password: '' });
   const [showPass, setShowPass] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   function handleChange(e) {
@@ -20,30 +22,27 @@ export default function Register() {
       setError('Password must be at least 8 characters with uppercase, lowercase, number and special character.');
       return;
     }
-    let users = [];
-    try { users = JSON.parse(localStorage.getItem('registeredUsers') || '[]'); } catch {}
-    const exists = users.find(u => u.email === form.email.trim().toLowerCase());
-    if (exists) { setError('This email is already registered. Please sign in instead.'); return; }
-
-    users.push({ name: form.fullname, email: form.email.toLowerCase(), password: form.password, role: form.role, provider: 'email' });
-    localStorage.setItem('registeredUsers', JSON.stringify(users));
-    localStorage.removeItem('userProfile');
-    localStorage.removeItem('userAvatar');
-    localStorage.setItem('userName', form.fullname);
-    localStorage.setItem('userEmail', form.email.toLowerCase());
-    localStorage.setItem('userRole', form.role);
-
-    try {
-      await fetch('/api/send-welcome', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: form.email, name: form.fullname })
-      });
-    } catch {}
-
+    setLoading(true);
     setError('');
-    if (form.role === 'admin') navigate('/admin');
-    else navigate('/onboarding');
+    try {
+      const data = await authAPI.register({
+        name: form.fullname,
+        email: form.email,
+        password: form.password,
+        role: form.role,
+      });
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('userName', data.user.name);
+      localStorage.setItem('userEmail', data.user.email);
+      localStorage.setItem('userRole', data.user.role);
+      localStorage.setItem('userId', data.user.id);
+      if (data.user.role === 'admin') navigate('/admin');
+      else navigate('/onboarding');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -99,7 +98,7 @@ export default function Register() {
               </button>
             </div>
           </div>
-          <button type="submit" className="btn btn-primary full-width">Create Account</button>
+          <button type="submit" className="btn btn-primary full-width" disabled={loading}>{loading ? 'Creating Account...' : 'Create Account'}</button>
         </form>
 
         <div className="auth-links">

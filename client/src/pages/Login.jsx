@@ -1,11 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-
-const GOOGLE_CLIENT_ID = '220990349271-16bitos8lvag5d1thbdhhkt2da0mq5g9.apps.googleusercontent.com';
-
-function getUsers() {
-  try { return JSON.parse(localStorage.getItem('registeredUsers') || '[]'); } catch { return []; }
-}
+import { authAPI } from '../api';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -13,33 +8,31 @@ export default function Login() {
   const [role, setRole] = useState('user');
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  function sessionStart(name, emailVal, roleVal) {
-    const prevEmail = localStorage.getItem('userEmail');
-    if (prevEmail && prevEmail !== emailVal) {
-      localStorage.removeItem('userProfile');
-      localStorage.removeItem('userAvatar');
-    }
-    localStorage.setItem('userName', name);
-    localStorage.setItem('userEmail', emailVal);
-    if (roleVal) localStorage.setItem('userRole', roleVal);
-    if (roleVal === 'admin') navigate('/admin');
+  function sessionStart(token, user) {
+    localStorage.setItem('token', token);
+    localStorage.setItem('userName', user.name);
+    localStorage.setItem('userEmail', user.email);
+    localStorage.setItem('userRole', user.role);
+    localStorage.setItem('userId', user.id);
+    if (user.role === 'admin') navigate('/admin');
     else navigate('/dashboard');
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
-    const users = getUsers();
-    const user = users.find(u => u.email === email.trim().toLowerCase());
-    if (!user) { setError('No account found with this email. Please register first.'); return; }
-    if (user.provider === 'google') { setError('This account uses Google Sign-In. Please use "Sign in with Google" below.'); return; }
-    if (user.password !== password) { setError('Incorrect password. Please try again.'); return; }
-    const registeredRole = user.role || 'user';
-    if (registeredRole !== role) { setError(`Access Denied. You are not registered as ${role.toUpperCase()}.`); return; }
-    if (user.status === 'blocked') { setError('Your account has been suspended. Please contact support.'); return; }
+    setLoading(true);
     setError('');
-    sessionStart(user.name, user.email, role);
+    try {
+      const data = await authAPI.login({ email, password, role });
+      sessionStart(data.token, data.user);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -80,7 +73,9 @@ export default function Login() {
               <option value="admin">System Administrator</option>
             </select>
           </div>
-          <button type="submit" className="btn btn-primary">Sign In</button>
+          <button type="submit" className="btn btn-primary" disabled={loading}>
+            {loading ? 'Signing in...' : 'Sign In'}
+          </button>
         </form>
 
         <div className="auth-links">
