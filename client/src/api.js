@@ -77,10 +77,21 @@ export const supportAPI = {
 
 // ─── Admin ────────────────────────────────────────────────────────────────────
 export const adminAPI = {
+  // Dashboard stats
   stats:    () => apiFetch('/admin/stats'),
-  getUsers: () => apiFetch('/admin/users'),
-  blockUser:  (id, status) => apiFetch(`/admin/users/${id}/status`, { method: 'PUT', body: JSON.stringify({ status }) }),
-  deleteUser: (id)         => apiFetch(`/admin/users/${id}`, { method: 'DELETE' }),
+
+  // User management
+  getUsers:    () => apiFetch('/admin/users'),
+  createUser:  (body)        => apiFetch('/admin/users', { method: 'POST', body: JSON.stringify(body) }),
+  blockUser:   (id, status)  => apiFetch(`/admin/users/${id}/status`, { method: 'PUT', body: JSON.stringify({ status }) }),
+  deleteUser:  (id)          => apiFetch(`/admin/users/${id}`, { method: 'DELETE' }),
+
+  // Transactions (admin view all)
+  getTransactions: () => apiFetch('/admin/transactions'),
+  deleteTransaction: (id) => apiFetch(`/admin/transactions/${id}`, { method: 'DELETE' }),
+
+  // Savings goals (admin view all)
+  getGoals: () => apiFetch('/admin/goals'),
 
   // Schemes CMS
   getSchemes:    ()        => apiFetch('/admin/schemes'),
@@ -96,6 +107,35 @@ export const adminAPI = {
 
   // Support Tickets (admin view)
   getTickets:    (status) => apiFetch(`/admin/support${status ? `?status=${status}` : ''}`),
-  updateTicket:  (id, body) => apiFetch(`/support/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
-  deleteTicket:  (id)       => apiFetch(`/support/${id}`, { method: 'DELETE' }),
+  updateTicket:  (id, body) => apiFetch(`/admin/support/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
+  deleteTicket:  (id)       => apiFetch(`/admin/support/${id}`, { method: 'DELETE' }),
+
+  // Admin password
+  changePassword: (body) => apiFetch('/admin/change-password', { method: 'PUT', body: JSON.stringify(body) }),
+
+  // Data export (returns download URL)
+  exportData: (type) => {
+    const token = getToken();
+    const url = `${BASE_URL}/admin/export/${type}`;
+    // Trigger download via hidden anchor
+    const a = document.createElement('a');
+    a.href = url;
+    a.setAttribute('download', '');
+    // We need auth header, so use fetch + blob
+    return fetch(url, {
+      headers: { Authorization: `Bearer ${token}` }
+    }).then(res => {
+      if (!res.ok) throw new Error('Export failed');
+      return res.blob();
+    }).then(blob => {
+      const blobUrl = URL.createObjectURL(blob);
+      a.href = blobUrl;
+      a.download = `shefinance_${type}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
+    });
+  },
 };
+
