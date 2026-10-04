@@ -305,10 +305,10 @@ export default function Savings() {
             </div>
             <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
               <button className="btn-submit-goal" onClick={handleSave}>
-                <i className={`fa-solid ${editIdx >= 0 ? 'fa-floppy-disk' : 'fa-check'}`}></i> {editIdx >= 0 ? 'Update Goal' : 'Set Goal'}
+                <i className={`fa-solid ${editingGoal ? 'fa-floppy-disk' : 'fa-check'}`}></i> {editingGoal ? 'Update Goal' : 'Set Goal'}
               </button>
-              {editIdx >= 0 && (
-                <button onClick={() => { setEditIdx(-1); setForm(defaultForm); }} style={{ padding: '12px 20px', background: '#f0f0f0', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, color: '#555' }}>
+              {editingGoal && (
+                <button onClick={() => { setEditingGoal(null); setForm(defaultForm); }} style={{ padding: '12px 20px', background: '#f0f0f0', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, color: '#555' }}>
                   Cancel
                 </button>
               )}
@@ -341,7 +341,7 @@ export default function Savings() {
                 const pct = Math.min(100, goal.targetAmount > 0 ? (goal.savedAmount / goal.targetAmount) * 100 : 0);
                 const achieved = goal.savedAmount >= goal.targetAmount;
                 return (
-                  <div className="goal-item" key={idx} style={{ borderLeftColor: achieved ? '#2ecc71' : 'var(--secondary-color)' }}>
+                  <div className="goal-item" key={goal._id || idx} style={{ borderLeftColor: achieved ? '#2ecc71' : 'var(--secondary-color)' }}>
                     <div className="goal-header">
                       <div className="goal-title-wrapper">
                         <div className="goal-icon" style={achieved ? { background: 'rgba(46,204,113,0.1)', color: '#2ecc71' } : {}}>
@@ -368,19 +368,19 @@ export default function Savings() {
                       </div>
                     </div>
                     <div className="goal-actions">
-                      <button className="btn-action btn-add-val" onClick={() => openAdjust(idx, 'add')}>
+                      <button className="btn-action btn-add-val" onClick={() => openAdjust(goal, 'add')}>
                         <i className="fa-solid fa-plus"></i> Add Savings
                       </button>
-                      <button className="btn-action btn-sub-val" onClick={() => openAdjust(idx, 'sub')}>
+                      <button className="btn-action btn-sub-val" onClick={() => openAdjust(goal, 'sub')}>
                         <i className="fa-solid fa-minus"></i> Withdraw
                       </button>
                       <button className="btn-action btn-predict-val" onClick={() => predict(goal, idx)} disabled={loadingPred}>
                         <i className="fa-solid fa-robot"></i> {loadingPred ? 'Predicting...' : 'AI Predict'}
                       </button>
-                      <button className="btn-action" onClick={() => openEdit(goal, idx)} style={{ background: 'rgba(52,152,219,0.1)', color: '#3498db' }}>
+                      <button className="btn-action" onClick={() => openEdit(goal)} style={{ background: 'rgba(52,152,219,0.1)', color: '#3498db' }}>
                         <i className="fa-solid fa-pen"></i>
                       </button>
-                      <button className="btn-action btn-delete-goal" onClick={() => handleDelete(idx)}>
+                      <button className="btn-action btn-delete-goal" onClick={() => handleDelete(goal)}>
                         <i className="fa-solid fa-trash"></i>
                       </button>
                     </div>
