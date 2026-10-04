@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import DashboardNav from '../components/DashboardNav';
+import { savingsAPI } from '../api';
 
 const GOAL_ICONS = [
   { icon: 'fa-house', label: 'Home' },
@@ -20,21 +21,34 @@ const defaultForm = {
   targetDate: '', icon: 'fa-bullseye',
 };
 
-function getGoals() { try { return JSON.parse(localStorage.getItem('sheFinanceGoals') || '[]'); } catch { return []; } }
-function saveGoals(g) { localStorage.setItem('sheFinanceGoals', JSON.stringify(g)); }
-
 export default function Savings() {
   const [goals, setGoals] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(defaultForm);
-  const [editIdx, setEditIdx] = useState(-1);
+  const [editingGoal, setEditingGoal] = useState(null);
   const [toast, setToast] = useState('');
   const [userName, setUserName] = useState('User');
   const [avatar, setAvatar] = useState('');
   const [predModal, setPredModal] = useState(null);
   const [loadingPred, setLoadingPred] = useState(false);
-  const [adjustModal, setAdjustModal] = useState(null); // { idx, type: 'add'|'sub', amount: '' }
+  const [adjustModal, setAdjustModal] = useState(null); // { goal, type: 'add'|'sub', amount: '' }
   const [peerData, setPeerData] = useState(null);
+
+  async function loadGoals() {
+    setLoading(true);
+    try {
+      const res = await savingsAPI.getAll();
+      const list = res.goals || [];
+      setGoals(list);
+      localStorage.setItem('sheFinanceGoals', JSON.stringify(list));
+    } catch {
+      const cached = JSON.parse(localStorage.getItem('sheFinanceGoals') || '[]');
+      setGoals(cached);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   useEffect(() => {
     const name = localStorage.getItem('userName') || 'User';
@@ -42,7 +56,7 @@ export default function Savings() {
     setUserName(formatted);
     const saved = localStorage.getItem('userAvatar');
     setAvatar(saved || `https://ui-avatars.com/api/?name=${encodeURIComponent(formatted)}&background=c99f55&color=fff`);
-    setGoals(getGoals());
+    loadGoals();
     fetchPeerData();
   }, []);
 
@@ -59,62 +73,101 @@ export default function Savings() {
   }
 
   function openAdd() {
-    setEditIdx(-1);
+    setEditingGoal(null);
     setForm(defaultForm);
     setShowForm(true);
   }
 
-  function openEdit(goal, idx) {
-    setEditIdx(idx);
-    setForm({ name: goal.name, targetAmount: String(goal.targetAmount), savedAmount: String(goal.savedAmount), monthlySavings: String(goal.monthlySavings), targetDate: goal.targetDate, icon: goal.icon || 'fa-bullseye' });
+  function openEdit(goal) {
+    setEditingGoal(goal);
+    setForm({
+      name: goal.name,
+      targetAmount: String(goal.targetAmount),
+      savedAmount: String(goal.savedAmount),
+      monthlySavings: String(goal.monthlySavings || ''),
+      targetDate: goal.targetDate ? goal.targetDate.split('T')[0] : '',
+      icon: goal.icon || 'fa-bullseye'
+    });
     setShowForm(true);
   }
 
-  function handleSave() {
+  async function handleSave() {
     if (!form.name.trim() || !form.targetAmount || !form.targetDate) {
       alert('Please fill in name, target amount, and target date.');
       return;
     }
-    const goal = {
-      name: form.name, targetAmount: parseFloat(form.targetAmount),
+    const payload = {
+      name: form.name,
+      targetAmount: parseFloat(form.targetAmount),
       savedAmount: parseFloat(form.savedAmount) || 0,
       monthlySavings: parseFloat(form.monthlySavings) || 0,
-      targetDate: form.targetDate, icon: form.icon,
-      createdAt: new Date().toISOString(),
+      targetDate: form.targetDate,
+      icon: form.icon,
     };
-    const updated = [...goals];
-    if (editIdx >= 0) { updated[editIdx] = { ...updated[editIdx], ...goal }; showToast('Goal updated!'); }
-    else { updated.push(goal); showToast('Goal added!'); }
-    saveGoals(updated);
-    setGoals(updated);
-    setShowForm(false);
+
+    try {
+      if (editingGoal && editingGoal._id) {
+        const res = await savingsAPI.update(editingGoal._id, payload);
+        const updated = goals.map(g => (g._id === editingGoal._id ? res.goal : g));
+        setGoals(updated);
+        localStorage.setItem('sheFinanceGoals', JSON.stringify(updated));
+        showToast('Goal updated in database!');
+      } else {
+        const res = await savingsAPI.create(payload);
+        const updated = [res.goal, ...goals];
+        setGoals(updated);
+        localStorage.setItem('sheFinanceGoals', JSON.stringify(updated));
+        showToast('Goal saved to database!');
+      }
+      setShowForm(false);
+    } catch (err) {
+      alert('Failed to save goal: ' + err.message);
+    }
   }
 
-  function handleDelete(idx) {
+  async function handleDelete(goal) {
     if (!window.confirm('Delete this savings goal?')) return;
-    const updated = [...goals];
-    updated.splice(idx, 1);
-    saveGoals(updated);
-    setGoals(updated);
-    showToast('Goal deleted!');
+    try {
+      if (goal._id) {
+        await savingsAPI.delete(goal._id);
+      }
+      const updated = goals.filter(g => g !== goal && g._id !== goal._id);
+      setGoals(updated);
+      localStorage.setItem('sheFinanceGoals', JSON.stringify(updated));
+      showToast('Goal deleted from database!');
+    } catch (err) {
+      alert('Failed to delete goal: ' + err.message);
+    }
   }
 
-  function openAdjust(idx, type) {
-    setAdjustModal({ idx, type, amount: '' });
+  function openAdjust(goal, type) {
+    setAdjustModal({ goal, type, amount: '' });
   }
 
-  function applyAdjust() {
+  async function applyAdjust() {
     const amt = parseFloat(adjustModal.amount);
     if (!amt || amt <= 0) { alert('Enter a valid amount.'); return; }
-    const updated = [...goals];
-    const goal = { ...updated[adjustModal.idx] };
-    if (adjustModal.type === 'add') goal.savedAmount = (goal.savedAmount || 0) + amt;
-    else goal.savedAmount = Math.max(0, (goal.savedAmount || 0) - amt);
-    updated[adjustModal.idx] = goal;
-    saveGoals(updated);
-    setGoals(updated);
-    setAdjustModal(null);
-    showToast(adjustModal.type === 'add' ? `₹${amt.toLocaleString('en-IN')} added to savings!` : `₹${amt.toLocaleString('en-IN')} withdrawn.`);
+    const currentGoal = adjustModal.goal;
+    const newSaved = adjustModal.type === 'add'
+      ? (currentGoal.savedAmount || 0) + amt
+      : Math.max(0, (currentGoal.savedAmount || 0) - amt);
+
+    try {
+      if (currentGoal._id) {
+        const res = await savingsAPI.update(currentGoal._id, { savedAmount: newSaved });
+        const updated = goals.map(g => (g._id === currentGoal._id ? res.goal : g));
+        setGoals(updated);
+        localStorage.setItem('sheFinanceGoals', JSON.stringify(updated));
+      } else {
+        const updated = goals.map(g => g === currentGoal ? { ...g, savedAmount: newSaved } : g);
+        setGoals(updated);
+        localStorage.setItem('sheFinanceGoals', JSON.stringify(updated));
+      }
+      setAdjustModal(null);
+      showToast(adjustModal.type === 'add' ? `₹${amt.toLocaleString('en-IN')} added to savings!` : `₹${amt.toLocaleString('en-IN')} withdrawn.`);
+    } catch (err) {
+      alert('Failed to adjust amount: ' + err.message);
+    }
   }
 
   async function predict(goal, idx) {

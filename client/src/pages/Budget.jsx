@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import DashboardNav from '../components/DashboardNav';
+import { budgetAPI, transactionAPI } from '../api';
 
 const EXPENSE_CATEGORIES = [
   { key: 'Food', label: 'Food & Groceries', icon: 'fa-utensils', colorClass: 'food' },
@@ -14,19 +15,49 @@ const EXPENSE_CATEGORIES = [
   { key: 'Other', label: 'Other', icon: 'fa-ellipsis', colorClass: 'other' },
 ];
 
-function getTxs() { try { return JSON.parse(localStorage.getItem('sheFinanceTransactions') || '[]'); } catch { return []; } }
-function getBudgets() { try { return JSON.parse(localStorage.getItem('sheFinanceBudgets') || '{}'); } catch { return {}; } }
-function saveBudgets(b) { localStorage.setItem('sheFinanceBudgets', JSON.stringify(b)); }
-
 export default function Budget() {
   const now = new Date();
   const currentMonthStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
   const [selectedMonth, setSelectedMonth] = useState(currentMonthStr);
   const [budgets, setBudgets] = useState({});
   const [inputs, setInputs] = useState({});
+  const [txs, setTxs] = useState([]);
   const [toast, setToast] = useState('');
   const [userName, setUserName] = useState('User');
   const [avatar, setAvatar] = useState('');
+
+  async function loadBudgetData(month) {
+    try {
+      const res = await budgetAPI.get(month);
+      const categoryMap = {};
+      if (res.budget && Array.isArray(res.budget.categories)) {
+        res.budget.categories.forEach(c => {
+          categoryMap[c.name] = c.allocated || 0;
+        });
+      }
+      setBudgets(categoryMap);
+      const inp = {};
+      EXPENSE_CATEGORIES.forEach(c => { inp[c.key] = categoryMap[c.key] || ''; });
+      setInputs(inp);
+    } catch {
+      const all = JSON.parse(localStorage.getItem('sheFinanceBudgets') || '{}');
+      const monthBudget = all[month] || {};
+      setBudgets(monthBudget);
+      const inp = {};
+      EXPENSE_CATEGORIES.forEach(c => { inp[c.key] = monthBudget[c.key] || ''; });
+      setInputs(inp);
+    }
+  }
+
+  async function loadTransactions() {
+    try {
+      const res = await transactionAPI.getAll();
+      setTxs(res.transactions || []);
+    } catch {
+      const cached = JSON.parse(localStorage.getItem('sheFinanceTransactions') || '[]');
+      setTxs(cached);
+    }
+  }
 
   useEffect(() => {
     const name = localStorage.getItem('userName') || 'User';
@@ -34,34 +65,44 @@ export default function Budget() {
     setUserName(formatted);
     const saved = localStorage.getItem('userAvatar');
     setAvatar(saved || `https://ui-avatars.com/api/?name=${encodeURIComponent(formatted)}&background=c99f55&color=fff`);
-    loadBudget(selectedMonth);
+    loadBudgetData(selectedMonth);
+    loadTransactions();
   }, []);
 
-  function loadBudget(month) {
-    const all = getBudgets();
-    const monthBudget = all[month] || {};
-    setBudgets(monthBudget);
-    const inp = {};
-    EXPENSE_CATEGORIES.forEach(c => { inp[c.key] = monthBudget[c.key] || ''; });
-    setInputs(inp);
-  }
-
   function handleMonthChange(e) {
-    setSelectedMonth(e.target.value);
-    loadBudget(e.target.value);
+    const m = e.target.value;
+    setSelectedMonth(m);
+    loadBudgetData(m);
   }
 
-  function handleSave() {
-    const all = getBudgets();
+  async function handleSave() {
     const parsed = {};
+    const categoriesArray = [];
+    let totalBudgetSum = 0;
+
     EXPENSE_CATEGORIES.forEach(c => {
       const v = parseFloat(inputs[c.key]);
-      if (!isNaN(v) && v > 0) parsed[c.key] = v;
+      if (!isNaN(v) && v > 0) {
+        parsed[c.key] = v;
+        categoriesArray.push({ name: c.key, allocated: v, spent: getSpent(c.key) });
+        totalBudgetSum += v;
+      }
     });
-    all[selectedMonth] = parsed;
-    saveBudgets(all);
-    setBudgets(parsed);
-    showToast('Budget saved successfully! ✅');
+
+    try {
+      await budgetAPI.save({
+        month: selectedMonth,
+        totalBudget: totalBudgetSum,
+        categories: categoriesArray
+      });
+      setBudgets(parsed);
+      const all = JSON.parse(localStorage.getItem('sheFinanceBudgets') || '{}');
+      all[selectedMonth] = parsed;
+      localStorage.setItem('sheFinanceBudgets', JSON.stringify(all));
+      showToast('Budget saved to database! ✅');
+    } catch (err) {
+      alert('Failed to save budget: ' + err.message);
+    }
   }
 
   function showToast(msg) {
@@ -70,11 +111,10 @@ export default function Budget() {
   }
 
   // Calculate actual spending for selected month per category
-  const txs = getTxs();
-  const monthTxs = txs.filter(tx => tx.type === 'expense' && tx.date && tx.date.substring(0, 7) === selectedMonth);
+  const monthTxs = txs.filter(tx => tx.type === 'expense' && tx.date && (typeof tx.date === 'string' ? tx.date : new Date(tx.date).toISOString()).substring(0, 7) === selectedMonth);
 
   function getSpent(catKey) {
-    return monthTxs.filter(tx => tx.category === catKey).reduce((s, t) => s + t.amount, 0);
+    return monthTxs.filter(tx => tx.category === catKey || tx.category.toLowerCase().includes(catKey.toLowerCase())).reduce((s, t) => s + Number(t.amount || 0), 0);
   }
 
   const totalBudget = EXPENSE_CATEGORIES.reduce((s, c) => s + (budgets[c.key] || 0), 0);
