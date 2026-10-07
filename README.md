@@ -1,4 +1,4 @@
-# SheFinance - Women Financial Inclusion Website 🌸
+# SheFinance - Women Financial Inclusion Website 
 
 **SheFinance** is a comprehensive, AI-powered web platform designed to empower women across India through financial literacy, automated income/expense tracking, intelligent budget planning, machine-learning analytics, and **live government scheme discovery powered by an automated web scraper engine**.
 
