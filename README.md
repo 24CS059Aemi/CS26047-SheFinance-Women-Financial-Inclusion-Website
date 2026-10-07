@@ -38,53 +38,53 @@ In India, a significant gender gap exists in financial literacy and independence
 ## 🕷️ 3. Web Scraper & Government Schemes Engine
 
 ```mermaid
-flowchart TD
-    subgraph Triggers ["1. Execution Triggers"]
-        T1["⏰ node-cron (Daily at 2:00 AM IST)"]
-        T2["🚀 Server Startup Hook (server.js)"]
-        T3["🖱️ Admin 1-Click Sync Button (/admin)"]
+graph LR
+    subgraph Sources["Govt Portals"]
+        G1["wcd.gov.in"]
+        G2["myscheme.gov.in"]
+        G3["india.gov.in"]
     end
 
-    subgraph ScraperEngine ["2. Web Scraper Engine (routes/schemes.js)"]
-        A["📡 HTTP Request (axios with Browser User-Agent)"]
-        B["🌐 Official Portals (wcd.gov.in, myscheme.gov.in)"]
-        C["🔍 Server-Side HTML DOM Parser (cheerio)"]
+    subgraph Automation["Trigger Engine"]
+        CR["⏰ node-cron<br/>(Daily 2:00 AM IST)"]
+        AD["🖱️ Express Admin API<br/>(1-Click Sync)"]
     end
 
-    subgraph DataPipeline ["3. Deduplication & Storage"]
-        D["Extract Title, Category, Ministry, Benefits, Links"]
-        E{"Exists in MongoDB?"}
-        F["🆕 Insert New Scheme (source: 'govt_api')"]
-        G["⏱️ Update lastSyncedAt Timestamp"]
+    subgraph Engine["Scraper Pipeline"]
+        AX["📡 Axios HTTP Client<br/>(User-Agent Headers)"]
+        CH["🔍 Cheerio HTML Parser<br/>(DOM Extraction)"]
+        DD["⚡ Deduplication Engine<br/>(Regex Matching)"]
     end
 
-    subgraph Database ["4. High-Speed Cache"]
-        H[("🍃 MongoDB Atlas (Scheme Collection)")]
+    subgraph Database["Cache Storage"]
+        MG[("🍃 MongoDB Atlas<br/>(Scheme Collection)")]
     end
 
-    subgraph Frontend ["5. User Interface"]
-        I["💻 Schemes Page (/schemes)"]
-        J["👤 User Searches, Filters & Applies"]
+    subgraph UI["React Web App"]
+        EX["⚡ Express REST API<br/>(GET /api/schemes)"]
+        RC["💻 React.js Frontend<br/>(Schemes.jsx Page)"]
     end
 
-    T1 --> A
-    T2 --> A
-    T3 --> A
-
-    A --> B
-    B --> C
-    C --> D
-    D --> E
-
-    E -- No --> F
-    E -- Yes --> G
-
-    F --> H
-    G --> H
-
-    H -->|GET /api/schemes| I
-    I --> J
+    Sources --> AX
+    CR --> AX
+    AD --> AX
+    AX --> CH
+    CH --> DD
+    DD --> MG
+    MG --> EX
+    EX --> RC
 ```
+
+### 🛠️ Scraper Technology Stack Map:
+
+| Pipeline Stage | Technology / Module | Purpose |
+| :--- | :--- | :--- |
+| **HTTP Transport** | `axios` | Sends HTTPS requests with browser `User-Agent` headers & timeouts |
+| **DOM Parsing** | `cheerio` | Server-side HTML query parsing & selector extraction |
+| **Task Automation** | `node-cron` | Schedules background auto-sync every 24h at 2:00 AM IST |
+| **High-Speed Cache** | MongoDB Atlas (`mongoose`) | Stores scraped data for < 50ms fast page delivery |
+| **API Backend** | Express.js (`routes/schemes.js`) | Exposes `/api/schemes` & `/api/admin/schemes/sync` |
+| **User Interface** | React.js (`Schemes.jsx`) | Renders interactive scheme cards with search & category filters |
 
 ### Key Scraper Features:
 1. **Live Scraping**: Fetches live scheme listings directly from official portals like the **Ministry of Women & Child Development (`wcd.gov.in`)**.
