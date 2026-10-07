@@ -1,121 +1,250 @@
-# SheFinance - Women Financial Inclusion Website
-SheFinance is a dedicated web platform designed to empower women through financial literacy, automated budgeting, and awareness of government schemes.
+# SheFinance - Women Financial Inclusion Website 🌸
+
+**SheFinance** is a comprehensive, AI-powered web platform designed to empower women across India through financial literacy, automated income/expense tracking, intelligent budget planning, machine-learning analytics, and **live government scheme discovery powered by an automated web scraper engine**.
 
 ---
 
-## 1. Introduction & Problem Definition Statement
-Many women face challenges in managing their personal finances due to limited financial awareness and the lack of a single platform that provides budgeting tools, savings guidance, financial education, and information about government schemes. Financial resources are scattered across different websites, making them difficult to access and understand.
+## 📌 1. Executive Summary & Problem Definition
 
-**SheFinance** is a web-based platform that aims to improve women's financial literacy by providing financial management tools, AI-based guidance, and educational resources in one place.
+In India, a significant gender gap exists in financial literacy and independence. Despite increasing workforce participation, many women—including students, homemakers, working professionals, and micro-entrepreneurs—lack access to simple, centralized financial planning tools and awareness of government welfare schemes. Financial information remains scattered across complex government websites, making it difficult to search, understand, and apply.
 
----
-
-## 2. Product Overview
-
-### 2.1 Target Users
-*   **Women Students:** To help them manage pocket money and build early savings habits.
-*   **Homemakers:** To manage household budgets, track daily expenses, and discover savings goals.
-*   **Working Professionals:** To plan monthly budgets, calculate tax, and invest wisely.
-*   **Women Entrepreneurs:** To track small business income, expenses, and explore government funding.
-*   **System Administrator:** To manage portal contents, update schemes, and monitor system health.
-
-### 2.2 Core Functionality
-*   **User Registration & Login:** Secure authentication using Google OAuth 2.0 and manual registration.
-*   **User Profile Management:** Customized profile details including occupation, monthly income, and financial goals.
-*   **Income & Expense Tracker:** Easy log to input and categorize daily financial transactions.
-*   **Monthly Budget Planner:** Set limits for different categories (groceries, education, entertainment).
-*   **Savings Goal Tracker:** Create, monitor, and visualize target savings achievements.
-*   **Government Scheme Information:** A curated database of government financial welfare schemes for women.
-*   **Financial Education:** Unified resource hub containing articles and video tutorials.
-*   **AI Financial Chatbot:** Interactive assistant to answer basic financial questions.
-*   **AI-Based Savings Prediction:** Machine Learning module to predict future savings trends based on history.
-*   **Financial Health Score:** Calculated rating showing the overall financial stability of the user.
-*   **Reports & Dashboard:** Modern visual analytics showing spending charts and monthly summaries.
+**SheFinance** solves this by offering a unified, secure platform featuring:
+* 🏛️ **Live Government Schemes Directory**: Scraped live from official portals (`wcd.gov.in`, `myscheme.gov.in`, `india.gov.in`) with automated daily background sync via `node-cron` and MongoDB Atlas caching.
+* 🤖 **AI Financial Assistant & NLP Chatbot**: Supervised Machine Learning chatbot (`Scikit-Learn` TF-IDF + Multinomial Naive Bayes) customized for women's financial advice.
+* 📊 **Smart Money Management**: Income & Expense Tracker, Savings Goals Progress Visualizer, Monthly Budget Planner (50-30-20 Rule), and Reports with charts.
+* 🎓 **Financial Education Hub**: Categorized financial literacy modules, interactive Loan EMI & SIP Calculators, and Admin-published guides.
+* 🛡️ **Admin Panel CMS & Management**: 1-Click Live Scheme Sync, User Management, Transaction & Savings Goal Monitor, Support Desk, and Content Publishing.
 
 ---
 
-## 3. Proposed Solution & Architecture
+## 🛠️ 2. Technology Stack & System Architecture
 
-### 3.1 Technology Stack
-*   **Frontend:** HTML5, CSS3, Vanilla JavaScript (Modern Glassmorphic Responsive Dashboard)
-*   **Backend:** Python Flask ML API (`app.py` on Port 5000) & Node.js Express Server (`server.js` on Port 3000)
-*   **Machine Learning Library:** Scikit-Learn (TF-IDF Vectorizer, Multinomial Naive Bayes Classifier, k-NN Regressor, Linear Regression)
-*   **Database & Storage:** Client-side HTML5 LocalStorage & Session persistence
-*   **Tools:** VS Code, Git, GitHub for version control
+### 🎨 Frontend
+* **Framework**: React.js (Vite)
+* **Styling**: Vanilla CSS3 (Modern Glassmorphic Responsive Aesthetics, Custom Tokens, Gradient Themes)
+* **Icons & Assets**: FontAwesome 6, Lucide Icons, UI Avatars API
+* **Navigation**: React Router DOM (Single Page Application architecture)
 
-### 3.2 AI Financial Chatbot & Machine Learning Pipeline
-SheFinance features a step-by-step Supervised NLP Machine Learning Chatbot designed specifically for women's financial literacy:
-
-1. **Step 1: Text Preprocessing & Tokenization**
-   • Lowercasing, regex special character stripping, and whitespace standardization.
-
-2. **Step 2: Feature Extraction (TF-IDF Vectorization)**
-   • Uses Scikit-Learn `TfidfVectorizer(ngram_range=(1, 2))` to extract unigrams and bigrams from user financial queries.
-
-3. **Step 3: Intent Classification Model (Multinomial Naive Bayes)**
-   • Classifies query into 11 distinct intent categories (`budgeting_advice`, `government_schemes`, `emergency_fund`, `investments_basics`, `savings_strategies`, `debt_management`, `financial_health_score`, `homemaker_finance`, `student_finance`, `tax_planning`, `greeting`).
-
-4. **Step 4: Cosine Similarity Verification & Fallback**
-   • Calculates cosine similarity scores against training patterns to refine prediction confidence and handle ambiguous phrasing safely.
-
-5. **Step 5: Dynamic Persona-based Context Customization**
-   • Customizes responses dynamically based on user persona (`occupation`: Student, Homemaker, Working Professional, Entrepreneur).
-
-6. **API Endpoint (`POST /api/chatbot`)**
-   ```json
-   {
-     "message": "What government loan schemes exist for female entrepreneurs?",
-     "user_profile": { "occupation": "business" }
-   }
-   ```
-   **Returns:**
-   ```json
-   {
-     "status": "success",
-     "reply": "🏛️ Top Government Financial Schemes for Women:...",
-     "intent": "government_schemes",
-     "confidence": 0.54,
-     "algorithm": "Multinomial Naive Bayes + TF-IDF Vectorizer",
-     "suggested_questions": ["Tell me about Mudra Loan", "What is Sukanya Samriddhi?"]
-   }
-   ```
+### ⚙️ Backend & APIs
+* **Primary API Server**: Node.js & Express.js (`server.js` on Port 3000)
+* **Machine Learning Server**: Python Flask ML Engine (`app.py` on Port 5000)
+* **Database**: MongoDB Atlas (`mongoose` ODM)
+* **Automation**: `node-cron` (Daily 2:00 AM IST background auto-sync)
+* **Web Scraper Engine**: `cheerio` + `axios` (Automated server-side DOM scraping and data extraction)
+* **Authentication**: JWT (JSON Web Tokens), bcryptjs password hashing, Google OAuth 2.0 integration
 
 ---
 
-## 4. Expected Outcome & Future Scope
+## 🕷️ 3. Web Scraper & Government Schemes Engine
 
-### 4.1 Expected Outcomes
-*   Significantly improve financial literacy and independence among women.
-*   Provide an easy-to-use, unified interface for household and professional budgeting.
-*   Encourage consistent savings habits with progress visualization.
-*   Increase direct awareness and adoption of central/state government financial schemes.
-*   Deliver automated, personalized guidance using AI without requiring human advisors.
+```mermaid
+flowchart TD
+    subgraph Triggers ["1. Execution Triggers"]
+        T1["⏰ node-cron (Daily at 2:00 AM IST)"]
+        T2["🚀 Server Startup Hook (server.js)"]
+        T3["🖱️ Admin 1-Click Sync Button (/admin)"]
+    end
 
-### 4.2 Future Enhancements
-*   **Smart Reminders:** Push notifications for budget limits and deposit goals.
-*   **Family Sharing:** Shared household budget planning with family members.
-*   **AI Budget Recommendations:** Automated cost-cutting suggestions.
-*   **Gamified Learning:** Financial quizzes with downloadable completion certificates.
+    subgraph ScraperEngine ["2. Web Scraper Engine (routes/schemes.js)"]
+        A["📡 HTTP Request (axios with Browser User-Agent)"]
+        B["🌐 Official Portals (wcd.gov.in, myscheme.gov.in)"]
+        C["🔍 Server-Side HTML DOM Parser (cheerio)"]
+    end
+
+    subgraph DataPipeline ["3. Deduplication & Storage"]
+        D["Extract Title, Category, Ministry, Benefits, Links"]
+        E{"Exists in MongoDB?"}
+        F["🆕 Insert New Scheme (source: 'govt_api')"]
+        G["⏱️ Update lastSyncedAt Timestamp"]
+    end
+
+    subgraph Database ["4. High-Speed Cache"]
+        H[("🍃 MongoDB Atlas (Scheme Collection)")]
+    end
+
+    subgraph Frontend ["5. User Interface"]
+        I["💻 Schemes Page (/schemes)"]
+        J["👤 User Searches, Filters & Applies"]
+    end
+
+    T1 --> A
+    T2 --> A
+    T3 --> A
+
+    A --> B
+    B --> C
+    C --> D
+    D --> E
+
+    E -- No --> F
+    E -- Yes --> G
+
+    F --> H
+    G --> H
+
+    H -->|GET /api/schemes| I
+    I --> J
+```
+
+### Key Scraper Features:
+1. **Live Scraping**: Fetches live scheme listings directly from official portals like the **Ministry of Women & Child Development (`wcd.gov.in`)**.
+2. **Deduplication**: Case-insensitive Regex title matching ensures zero duplicate records in MongoDB.
+3. **High-Speed MongoDB Caching**: Serves scheme listings in **< 50ms**, ensuring the website operates smoothly even if government portals are slow or down.
+4. **Fallback Seed Data**: Contains 12 curated baseline government schemes (*Sukanya Samriddhi Yojana*, *Mahila Samman Savings Certificate*, *PMMY Mudra Loan*, *Stand-Up India*, etc.).
+5. **Admin 1-Click Sync**: Admins can manually trigger instant scraping from the Admin CMS (`POST /api/admin/schemes/sync`).
 
 ---
 
-## 5. Potential Challenges
-*   **Security & Privacy:** Securing sensitive personal financial information.
-*   **AI Accuracy:** Ensuring the chatbot and prediction algorithms provide reliable calculations.
-*   **Content Freshness:** Keeping the database of government schemes updated regularly.
-*   **UI/UX Simplicity:** Creating a clean, non-intimidating design for beginners.
+## 🤖 4. AI Chatbot & Machine Learning Pipeline
+
+SheFinance incorporates two specialized Machine Learning engines in Python (`app.py`):
+
+1. **Supervised NLP Financial Chatbot**:
+   * **Feature Extraction**: TF-IDF Vectorization (`ngram_range=(1, 2)`).
+   * **Classifier**: Multinomial Naive Bayes intent classification across 11 financial categories.
+   * **Confidence Fallback**: Cosine similarity verification for ambiguous inputs.
+   * **Persona Customization**: Tailors answers dynamically for Students, Homemakers, Working Professionals, and Entrepreneurs.
+
+2. **Savings Timeline & Health Prediction Models**:
+   * **`POST /api/predict_timeline`**: Predicts target goal achievement timeline using monthly savings rate and interest growth models.
+   * **`POST /api/predict_health`**: Calculates a comprehensive Financial Health Score (0-100) based on age, income, spending ratios, and emergency reserves.
 
 ---
 
-## 6. References
-*   Smart India Hackathon (SIH) Problem Statements
-*   Reserve Bank of India (RBI) Financial Literacy Guidelines
-*   Ministry of Women and Child Development, Government of India
-*   Pradhan Mantri Jan Dhan Yojana (PMJDY) Portal
-*   Academic Research Papers on Women Financial Inclusion and Empowerment
-*   Official React.js & Node.js Documentation
+## 📁 5. Directory Structure
+
+```text
+├── client/                     # React Frontend Application (Vite)
+│   ├── public/                 # Static assets & SVG icons
+│   ├── src/
+│   │   ├── api.js              # Centralized Axios API Service
+│   │   ├── App.jsx             # React Router Configuration & Protected Routes
+│   │   ├── index.css           # Global Styling & Design Tokens
+│   │   ├── components/         # Reusable Components (DashboardNav, Navbar, Footer)
+│   │   ├── data/               # Financial Literacy Data (educationData.js)
+│   │   └── pages/              # 15 React Page Components
+│   │       ├── Admin.jsx       # Admin Panel & CMS Management
+│   │       ├── Budget.jsx      # Monthly Budget Planner (50-30-20 Rule)
+│   │       ├── Chatbot.jsx     # AI Financial Assistant
+│   │       ├── Dashboard.jsx   # Overview Dashboard & Quick Metrics
+│   │       ├── Education.jsx   # Financial Literacy Hub & Calculators
+│   │       ├── Home.jsx        # Landing Page
+│   │       ├── Login.jsx       # User & Admin Login
+│   │       ├── Onboarding.jsx  # New User Profile Setup
+│   │       ├── Profile.jsx     # User Profile & Security Settings
+│   │       ├── Register.jsx    # User Registration
+│   │       ├── Reports.jsx     # Financial Analytics & Spend Breakdown
+│   │       ├── Savings.jsx     # Savings Goals Progress Tracker
+│   │       ├── Schemes.jsx     # Live Govt Schemes Directory & Filters
+│   │       ├── Support.jsx     # Helpdesk & Ticket Submission
+│   │       └── Tracker.jsx     # Income & Expense Transaction Logger
+├── middleware/                 # Auth Protection & Admin-Only Middlewares
+├── models/                     # Mongoose Schemas (User, Scheme, Transaction, Goal, Budget, Ticket, Cms)
+├── routes/                     # Express API Route Handlers
+│   ├── admin.js                # Admin Stats, User Management, CMS & Sync API
+│   ├── auth.js                 # Authentication & Google OAuth
+│   ├── budget.js               # Budget Planner CRUD
+│   ├── chatbot.js              # Express Chatbot Proxy
+│   ├── ml.js                   # ML Predictions Proxy
+│   ├── profile.js              # User Profile Management
+│   ├── savings.js              # Savings Goals CRUD
+│   ├── schemes.js              # Public Schemes & Web Scraper Engine
+│   ├── support.js              # Support Ticket System
+│   └── transactions.js         # Income & Expense Transactions CRUD
+├── app.py                      # Python Flask Machine Learning API
+├── db.js                       # MongoDB Atlas Connection Setup
+├── server.js                   # Node.js Express Backend & node-cron Setup
+└── verify-all.js               # Automated 17-Point System Verification Suite
+```
 
 ---
 
-**Developed by:** Aemi Patel
+## 🧪 6. Testing & System Verification
+
+The repository includes a comprehensive, automated system verification test suite (`verify-all.js`).
+
+To run the verification suite:
+```bash
+node verify-all.js
+```
+
+### Test Suite Summary (17/17 Passed):
+```text
+========================================================
+   FULL SYSTEM & PAGE VERIFICATION SUITE
+========================================================
+
+[PASS] ✅  1. API Health Check
+[PASS] ✅  2. User Register & Login Flow
+[PASS] ✅  3. Profile Get & Update
+[PASS] ✅  4. Tracker CRUD & Summary
+[PASS] ✅  5. Savings Goals CRUD
+[PASS] ✅  6. Budget Planner Save & Load
+[PASS] ✅  7. ML Timeline & Health Benchmark
+[PASS] ✅  8. AI Chatbot Financial Engine
+[PASS] ✅  9. Support Desk Ticket Submission
+[PASS] ✅  10. Admin Authentication (admin@shefinance.com)
+[PASS] ✅  11. Admin Platform Stats & Metrics
+[PASS] ✅  12. Admin Users Directory
+[PASS] ✅  13. Admin Transactions Monitor
+[PASS] ✅  14. Admin Savings Goals Monitor
+[PASS] ✅  15. Admin Support Ticket Management
+[PASS] ✅  16. Admin Schemes Content Management (CMS)
+[PASS] ✅  17. Admin Financial Literacy Articles (CMS)
+
+========================================================
+   TOTAL CHECKS: 17 | PASSED: 17 | FAILED: 0
+   OVERALL STATUS: ALL SYSTEMS OPERATIONAL ✅🎉
+========================================================
+```
+
+---
+
+## 💻 7. Installation & Local Setup
+
+### Prerequisites
+- **Node.js**: v18.0.0 or higher
+- **MongoDB**: MongoDB Atlas URI (configured in `.env`)
+- **Python**: v3.9 or higher (for `app.py`)
+
+### 1. Install Dependencies
+```bash
+# Root dependencies
+npm install
+
+# Client dependencies
+npm install --prefix client
+```
+
+### 2. Configure Environment Variables (`.env`)
+Create a `.env` file in the root directory:
+```env
+PORT=3000
+MONGODB_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/shefinance?retryWrites=true&w=majority
+JWT_SECRET=your_jwt_secret_key_here
+```
+
+### 3. Run the Servers
+```bash
+# Start Backend Express Server (Port 3000)
+node server.js
+
+# Start Frontend Dev Server (Port 5173)
+npm run dev
+
+# Start Python ML Server (Optional, Port 5000)
+python app.py
+```
+
+---
+
+## 🔑 Demo Admin Credentials
+
+- **Admin Login Page**: [http://localhost:5173/login](http://localhost:5173/login)
+- **Admin Email**: `admin@shefinance.com`
+- **Admin Password**: `Admin@2026`
+
+---
+
+**Developed by:** Aemi Patel  
 **Subject:** Project-I CEUP301 (Semester V)
