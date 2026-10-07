@@ -5,8 +5,10 @@ const User = require('../models/User');
 const Transaction = require('../models/Transaction');
 const SupportTicket = require('../models/SupportTicket');
 const CmsContent = require('../models/CmsContent');
+const Scheme = require('../models/Scheme');
 const SavingsGoal = require('../models/SavingsGoal');
 const { protect, adminOnly } = require('../middleware/auth');
+const { syncFromGovtAPI } = require('./schemes');
 
 // All admin routes require login + admin role
 router.use(protect, adminOnly);
@@ -20,7 +22,7 @@ router.get('/stats', async (req, res) => {
     const totalTickets = await SupportTicket.countDocuments();
     const totalTransactions = await Transaction.countDocuments();
     const totalGoals = await SavingsGoal.countDocuments();
-    const totalSchemes = await CmsContent.countDocuments({ type: 'scheme' });
+    const totalSchemes = await Scheme.countDocuments({ isActive: true });
     const totalArticles = await CmsContent.countDocuments({ type: 'literacy' });
     const revenueAgg = await Transaction.aggregate([
       { $match: { type: 'income' } },
@@ -180,34 +182,50 @@ router.delete('/support/:id', async (req, res) => {
   }
 });
 
-// ─── SCHEMES CMS ─────────────────────────────────────────────────────────────
+// ─── SCHEMES CMS (Admin Full Control) ────────────────────────────────────────
 
-// GET /api/admin/schemes
+// GET /api/admin/schemes  — all schemes (including inactive)
 router.get('/schemes', async (req, res) => {
   try {
-    const schemes = await CmsContent.find({ type: 'scheme' }).sort({ createdAt: -1 });
+    const schemes = await Scheme.find().sort({ source: 1, createdAt: -1 });
     res.json({ success: true, schemes });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
 });
 
-// POST /api/admin/schemes
+// POST /api/admin/schemes  — admin manually adds a new scheme
 router.post('/schemes', async (req, res) => {
   try {
-    const scheme = await CmsContent.create({ ...req.body, type: 'scheme', createdBy: req.user.id });
+    const { title, category, ministry, description, benefits, eligibility,
+            documents, officialLink, deadline, tags } = req.body;
+    if (!title) return res.status(400).json({ success: false, message: 'Title is required.' });
+    const scheme = await Scheme.create({
+      title, category, ministry, description, benefits, eligibility,
+      documents: Array.isArray(documents) ? documents : (documents || '').split(',').map(d => d.trim()).filter(Boolean),
+      officialLink, deadline,
+      tags: Array.isArray(tags) ? tags : (tags || '').split(',').map(t => t.trim()).filter(Boolean),
+      source: 'admin',
+      createdBy: req.user.id,
+      isActive: true
+    });
     res.status(201).json({ success: true, scheme });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
 });
 
-// PUT /api/admin/schemes/:id
+// PUT /api/admin/schemes/:id  — admin edits a scheme
 router.put('/schemes/:id', async (req, res) => {
   try {
-    const scheme = await CmsContent.findOneAndUpdate(
-      { _id: req.params.id, type: 'scheme' }, req.body, { new: true }
-    );
+    const updates = { ...req.body };
+    if (updates.documents && !Array.isArray(updates.documents)) {
+      updates.documents = updates.documents.split(',').map(d => d.trim()).filter(Boolean);
+    }
+    if (updates.tags && !Array.isArray(updates.tags)) {
+      updates.tags = updates.tags.split(',').map(t => t.trim()).filter(Boolean);
+    }
+    const scheme = await Scheme.findByIdAndUpdate(req.params.id, updates, { new: true });
     if (!scheme) return res.status(404).json({ success: false, message: 'Scheme not found.' });
     res.json({ success: true, scheme });
   } catch (err) {
@@ -218,8 +236,19 @@ router.put('/schemes/:id', async (req, res) => {
 // DELETE /api/admin/schemes/:id
 router.delete('/schemes/:id', async (req, res) => {
   try {
-    await CmsContent.findOneAndDelete({ _id: req.params.id, type: 'scheme' });
+    await Scheme.findByIdAndDelete(req.params.id);
     res.json({ success: true, message: 'Scheme deleted.' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// POST /api/admin/schemes/sync  — manually trigger govt API sync
+router.post('/schemes/sync', async (req, res) => {
+  try {
+    await syncFromGovtAPI();
+    const count = await Scheme.countDocuments({ source: 'govt_api' });
+    res.json({ success: true, message: `Govt API sync triggered. ${count} govt API schemes in DB.` });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
@@ -315,10 +344,10 @@ router.get('/export/:type', async (req, res) => {
       });
       filename = 'shefinance_transactions.csv';
     } else if (type === 'schemes') {
-      const schemes = await CmsContent.find({ type: 'scheme' }).lean();
-      csv = 'Title,Category,Benefits,Eligibility,Deadline,Active\n';
+      const schemes = await Scheme.find().lean();
+      csv = 'Title,Category,Ministry,Benefits,Eligibility,Deadline,Source,Active,OfficialLink\n';
       schemes.forEach(s => {
-        csv += `"${s.title}","${s.category}","${s.benefits}","${s.eligibility}","${s.deadline}",${s.isActive}\n`;
+        csv += `"${s.title}","${s.category}","${s.ministry}","${s.benefits}","${s.eligibility}","${s.deadline}","${s.source}",${s.isActive},"${s.officialLink}"\n`;
       });
       filename = 'shefinance_schemes.csv';
     } else if (type === 'literacy') {

@@ -3,13 +3,8 @@ import { Link } from 'react-router-dom';
 import DashboardNav from '../components/DashboardNav';
 import educationData from '../data/educationData';
 
-const DEFAULT_SCHEMES = [
-  { id: 1, name: 'Mahila Samman Savings Certificate', cat: 'Savings', benefit: '7.5% Fixed Interest p.a.', eligibility: 'Women of any age (Tenure 2 yrs)', status: 'active', link: 'https://www.indiapost.gov.in' },
-  { id: 2, name: 'Pradhan Mantri Mudra Yojana (PMMY)', cat: 'Business Loan', benefit: 'Collateral-free loan up to ₹10 Lakhs', eligibility: 'Women Entrepreneurs & Small Businesses', status: 'active', link: 'https://www.mudra.org.in' },
-  { id: 3, name: 'Sukanya Samriddhi Yojana (SSY)', cat: 'Girl Child', benefit: '8.2% Tax-Free Interest Rate', eligibility: 'Parents of girl child under 10 years', status: 'active', link: 'https://www.indiapost.gov.in' },
-  { id: 4, name: 'Stand-Up India Scheme', cat: 'Entrepreneurship', benefit: 'Bank loans from ₹10 Lakhs to ₹1 Crore', eligibility: 'SC/ST and Women Entrepreneurs', status: 'active', link: 'https://www.standupmitra.in' },
-  { id: 5, name: 'Dena Shakti Scheme', cat: 'Micro-Loan', benefit: '0.25% Interest concession on loans', eligibility: 'Women in agriculture, retail, micro-enterprises', status: 'active', link: 'https://www.bankofbaroda.in' }
-];
+// Government Schemes are now managed in the dedicated /schemes page
+// (fetched live from api.data.gov.in + MongoDB cache)
 
 const DEFAULT_LITERACY = [
   { id: 1, title: '50-30-20 Rule for Smart Budgeting', cat: 'Budgeting', type: 'Article Guide', level: 'Beginner', duration: '5 min read', desc: 'Divide monthly income into Needs (50%), Wants (30%), and Savings (20%).' },
@@ -175,14 +170,7 @@ export default function Education() {
     };
   }, []);
 
-  const adminSchemes = useMemo(() => {
-    try {
-      const s = localStorage.getItem('sheFinanceSchemes');
-      return s ? JSON.parse(s) : DEFAULT_SCHEMES;
-    } catch {
-      return DEFAULT_SCHEMES;
-    }
-  }, []);
+  // Govt Schemes are now on the dedicated /schemes page
 
   const adminLiteracy = useMemo(() => {
     try {
@@ -197,19 +185,10 @@ export default function Education() {
   const flatTopics = useMemo(() => {
     const list = [];
     educationData.forEach((levelObj) => {
+      if (levelObj.level.includes('Government Schemes') || levelObj.level.includes('Level 5')) return;
       levelObj.topics.forEach((t) => {
         list.push({ ...t, levelName: levelObj.level });
       });
-
-      if (levelObj.level.includes('Government Schemes') || levelObj.level.includes('Level 5')) {
-        list.push({
-          id: 'govt-schemes',
-          title: '6. Live Curated Schemes Directory',
-          icon: 'fa-solid fa-landmark',
-          isLiveSchemes: true,
-          levelName: levelObj.level
-        });
-      }
     });
 
     adminLiteracy.forEach((g) => {
@@ -381,6 +360,7 @@ export default function Education() {
             </div>
 
             {educationData.map((lvl, lIdx) => {
+              if (lvl.level.includes('Government Schemes') || lvl.level.includes('Level 5')) return null;
               const matchingTopics = lvl.topics.filter(t => 
                 !searchQuery || t.title.toLowerCase().includes(searchQuery.toLowerCase())
               );
@@ -434,29 +414,6 @@ export default function Education() {
                     );
                   })}
 
-                  {/* Curated Scheme directory item if level 5 */}
-                  {(lvl.level.includes('Government Schemes') || lvl.level.includes('Level 5')) && (
-                    <div
-                      onClick={() => handleSelectTopic('govt-schemes')}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '10px',
-                        padding: '9px 12px',
-                        borderRadius: '8px',
-                        color: selectedTopicId === 'govt-schemes' ? '#fff' : 'var(--text-dark)',
-                        background: selectedTopicId === 'govt-schemes' ? 'var(--secondary-color)' : 'transparent',
-                        boxShadow: selectedTopicId === 'govt-schemes' ? '0 4px 12px rgba(201,159,85,0.35)' : 'none',
-                        fontWeight: selectedTopicId === 'govt-schemes' ? 600 : 500,
-                        fontSize: '0.92rem',
-                        marginBottom: '4px',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      <i className="fa-solid fa-landmark" style={{ color: selectedTopicId === 'govt-schemes' ? '#fff' : 'var(--secondary-color)', minWidth: '16px' }}></i>
-                      <span>6. Live Curated Schemes Directory</span>
-                    </div>
-                  )}
                 </div>
               );
             })}
@@ -521,109 +478,7 @@ export default function Education() {
             display: 'flex',
             flexDirection: 'column'
           }}>
-            {/* Live Schemes View */}
-            {currentTopic?.isLiveSchemes ? (
-              <div>
-                <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: '2rem', color: 'var(--primary-color)', marginBottom: '10px' }}>
-                  🏛️ Government Schemes &amp; Subsidies for Women
-                </h2>
-                <p style={{ color: '#666', marginBottom: '24px' }}>
-                  Explore verified central &amp; state government financial schemes specifically designed for women&apos;s financial inclusion, savings, and entrepreneurship.
-                </p>
-
-                <div style={{
-                  background: '#f8f9fb',
-                  padding: '16px 20px',
-                  borderRadius: '10px',
-                  marginBottom: '24px',
-                  borderLeft: '4px solid var(--secondary-color)',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  flexWrap: 'wrap',
-                  gap: '10px'
-                }}>
-                  <div>
-                    <strong style={{ color: 'var(--primary-color)', fontSize: '1rem' }}>
-                      <i className="fa-solid fa-bullhorn" style={{ color: 'var(--secondary-color)', marginRight: '6px' }}></i>
-                      Curated Scheme Directory ({adminSchemes.filter(s => s.status === 'active').length} Active)
-                    </strong>
-                    <p style={{ margin: '4px 0 0', fontSize: '0.85rem', color: '#666' }}>All schemes below link directly to official national portals.</p>
-                  </div>
-                  <Link to="/chatbot" className="btn btn-outline" style={{ fontSize: '0.85rem', padding: '8px 14px' }}>
-                    <i className="fa-solid fa-robot"></i> Ask AI About Schemes
-                  </Link>
-                </div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-                  {adminSchemes.filter(s => s.status === 'active').map(s => (
-                    <div key={s.id} style={{
-                      background: '#ffffff',
-                      border: '1px solid #e2e8f0',
-                      borderRadius: '14px',
-                      padding: '24px',
-                      boxShadow: '0 4px 15px rgba(0,0,0,0.04)'
-                    }}>
-                      <div style={{ marginBottom: '16px' }}>
-                        <span style={{
-                          display: 'inline-block',
-                          padding: '4px 12px',
-                          borderRadius: '20px',
-                          background: 'rgba(201,159,85,0.15)',
-                          color: 'var(--primary-color)',
-                          fontSize: '0.8rem',
-                          fontWeight: 700,
-                          textTransform: 'uppercase',
-                          marginBottom: '8px'
-                        }}>
-                          {s.cat}
-                        </span>
-                        <h3 style={{ fontSize: '1.25rem', color: 'var(--primary-color)', margin: '0 0 6px 0', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                          <i className="fa-solid fa-landmark" style={{ color: 'var(--secondary-color)' }}></i> {s.name}
-                        </h3>
-                        <div style={{ fontSize: '0.9rem', color: '#64748b' }}>
-                          <strong>Eligibility:</strong> {s.eligibility}
-                        </div>
-                      </div>
-
-                      <div style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-                        gap: '12px',
-                        background: '#f8fafc',
-                        padding: '14px',
-                        borderRadius: '10px',
-                        border: '1px solid #edf2f7',
-                        margin: '16px 0'
-                      }}>
-                        <div>
-                          <strong style={{ color: 'var(--primary-color)', display: 'block', fontSize: '0.78rem', textTransform: 'uppercase' }}>Key Benefit</strong>
-                          <span style={{ color: '#27ae60', fontWeight: 600, fontSize: '0.92rem' }}>{s.benefit}</span>
-                        </div>
-                        <div>
-                          <strong style={{ color: 'var(--primary-color)', display: 'block', fontSize: '0.78rem', textTransform: 'uppercase' }}>Status</strong>
-                          <span style={{ color: '#2ecc71', fontWeight: 600, fontSize: '0.92rem' }}>
-                            <i className="fa-solid fa-circle-check"></i> Active Scheme
-                          </span>
-                        </div>
-                      </div>
-
-                      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', flexWrap: 'wrap', marginTop: '16px' }}>
-                        <a
-                          href={s.link || 'https://www.india.gov.in'}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="btn btn-primary"
-                          style={{ fontSize: '0.88rem', padding: '8px 16px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-                        >
-                          <i className="fa-solid fa-arrow-up-right-from-square"></i> Apply / View Official Portal
-                        </a>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ) : currentTopic?.isGuide ? (
+            {currentTopic?.isGuide ? (
               /* Admin Guide View */
               <div>
                 <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: '2rem', color: 'var(--primary-color)', marginBottom: '10px' }}>

@@ -9,6 +9,7 @@ import Budget from './pages/Budget';
 import Savings from './pages/Savings';
 import Chatbot from './pages/Chatbot';
 import Education from './pages/Education';
+import Schemes from './pages/Schemes';
 import Reports from './pages/Reports';
 import Profile from './pages/Profile';
 import Admin from './pages/Admin';
@@ -42,6 +43,7 @@ function App() {
         <Route path="/savings" element={<ProtectedRoute><Savings /></ProtectedRoute>} />
         <Route path="/chatbot" element={<ProtectedRoute><Chatbot /></ProtectedRoute>} />
         <Route path="/education" element={<ProtectedRoute><Education /></ProtectedRoute>} />
+        <Route path="/schemes" element={<ProtectedRoute><Schemes /></ProtectedRoute>} />
         <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         <Route path="/support" element={<Support />} />

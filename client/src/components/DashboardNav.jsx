@@ -8,6 +8,7 @@ const navItems = [
   { path: '/savings', icon: 'fa-solid fa-bullseye', label: 'Savings Goals' },
   { path: '/chatbot', icon: 'fa-solid fa-robot', label: 'AI Chatbot' },
   { path: '/education', icon: 'fa-solid fa-book-open-reader', label: 'Education Hub' },
+  { path: '/schemes', icon: 'fa-solid fa-landmark', label: 'Govt Schemes' },
   { path: '/reports', icon: 'fa-solid fa-chart-pie', label: 'Reports' },
 ];
 

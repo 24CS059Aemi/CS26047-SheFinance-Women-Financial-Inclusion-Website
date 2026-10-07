@@ -1,7 +1,8 @@
 require('dotenv').config();
 const express = require('express');
-const cors = require('cors');
-const path = require('path');
+const cors    = require('cors');
+const path    = require('path');
+const cron    = require('node-cron');
 const connectDB = require('./db');
 
 const app = express();
@@ -25,10 +26,14 @@ app.use('/api/savings',      require('./routes/savings'));
 app.use('/api/support',      require('./routes/support'));
 app.use('/api/admin',        require('./routes/admin'));
 app.use('/api/chatbot',      require('./routes/chatbot'));
+
+// ─── Public Schemes Route (no auth needed) ────────────────────────────────────
+const schemesModule = require('./routes/schemes');
+app.use('/api/schemes', schemesModule.router);
+
 app.use('/api',              require('./routes/ml'));
 
 // ─── Legacy compatibility endpoints ──────────────────────────────────────────
-// Keep /api/google-login and /api/send-welcome working (now handled in auth routes)
 app.post('/api/google-login',  (req, res) => res.redirect(307, '/api/auth/google-login'));
 app.post('/api/send-welcome',  (req, res) => res.redirect(307, '/api/auth/send-welcome'));
 
@@ -44,7 +49,35 @@ app.use((req, res) => {
 
 // ─── Start Server ─────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`🚀 SheFinance Backend running on http://localhost:${PORT}`);
   console.log(`📦 MongoDB: ${process.env.MONGODB_URI ? 'Connected via Atlas' : '⚠️  MONGODB_URI not set in .env'}`);
+
+  // ── Seed schemes if DB is empty (first run) ─────────────────────────────────
+  try {
+    await schemesModule.seedSchemesIfEmpty();
+  } catch (e) {
+    console.error('⚠️  Scheme seeding error:', e.message);
+  }
+
+  // ── Try initial Govt API sync ───────────────────────────────────────────────
+  try {
+    await schemesModule.syncFromGovtAPI();
+  } catch (e) {
+    console.error('⚠️  Initial Govt API sync error:', e.message);
+  }
+
+  // ── node-cron: Auto-sync from api.data.gov.in every 24 hours at 2:00 AM IST ─
+  cron.schedule('0 2 * * *', async () => {
+    console.log('⏰ [CRON] Daily Govt API sync triggered at 2:00 AM');
+    try {
+      await schemesModule.syncFromGovtAPI();
+      console.log('✅ [CRON] Daily sync complete.');
+    } catch (e) {
+      console.error('❌ [CRON] Daily sync failed:', e.message);
+    }
+  }, { timezone: 'Asia/Kolkata' });
+
+  console.log('⏰ node-cron: Govt API auto-sync scheduled daily at 2:00 AM IST');
 });
+

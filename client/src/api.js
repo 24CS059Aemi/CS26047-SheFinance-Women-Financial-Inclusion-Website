@@ -76,6 +76,17 @@ export const supportAPI = {
   myTickets: ()    => apiFetch('/support/my'),
 };
 
+// ─── Public Schemes (no auth required) ───────────────────────────────────────
+export const schemesAPI = {
+  getAll:  (params = {}) => {
+    const qs = new URLSearchParams(
+      Object.fromEntries(Object.entries(params).filter(([, v]) => v && v !== 'all'))
+    ).toString();
+    return apiFetch(`/schemes${qs ? `?${qs}` : ''}`);
+  },
+  getById: (id) => apiFetch(`/schemes/${id}`),
+};
+
 // ─── Admin ────────────────────────────────────────────────────────────────────
 export const adminAPI = {
   // Dashboard stats
@@ -94,11 +105,12 @@ export const adminAPI = {
   // Savings goals (admin view all)
   getGoals: () => apiFetch('/admin/goals'),
 
-  // Schemes CMS
+  // Schemes CMS (admin full control - uses new Scheme model)
   getSchemes:    ()        => apiFetch('/admin/schemes'),
   createScheme:  (body)    => apiFetch('/admin/schemes', { method: 'POST', body: JSON.stringify(body) }),
   updateScheme:  (id, body)=> apiFetch(`/admin/schemes/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
   deleteScheme:  (id)      => apiFetch(`/admin/schemes/${id}`, { method: 'DELETE' }),
+  syncSchemes:   ()        => apiFetch('/admin/schemes/sync', { method: 'POST' }),
 
   // Literacy CMS
   getLiteracy:    ()        => apiFetch('/admin/literacy'),
@@ -139,4 +151,5 @@ export const adminAPI = {
     });
   },
 };
+
 
