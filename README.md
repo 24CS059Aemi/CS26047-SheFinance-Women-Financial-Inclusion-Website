@@ -238,11 +238,9 @@ python app.py
 
 ---
 
-## 🔑 Demo Admin Credentials
+## 🔗 Web Application Link
 
-- **Admin Login Page**: [http://localhost:5173/login](http://localhost:5173/login)
-- **Admin Email**: `admin@shefinance.com`
-- **Admin Password**: `Admin@2026`
+- 🌸 **Landing Page**: [http://localhost:5173](http://localhost:5173)
 
 ---
 
