@@ -340,7 +340,7 @@ export default function Admin() {
   return (
     <div style={{ minHeight: '100vh', background: '#f0f2f5', fontFamily: "'Outfit', sans-serif" }}>
       {/* Top Navbar */}
-      <nav style={{
+      <nav className="admin-navbar" style={{
         background: 'var(--primary-color)',
         display: 'flex',
         alignItems: 'center',
@@ -354,13 +354,14 @@ export default function Admin() {
         flexWrap: 'wrap',
         gap: '15px'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div className="admin-header-logo" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <img src="/logo.png" alt="SheFinance" style={{ height: '34px', width: 'auto', borderRadius: '6px', objectFit: 'contain' }} />
           <h2 style={{ fontSize: '1.5rem', margin: 0, color: '#fff', fontFamily: "'Outfit', sans-serif" }}>
             She<span style={{ color: 'var(--secondary-color)' }}>Finance</span> Admin
           </h2>
         </div>
 
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', overflowX: 'auto', padding: '4px 0' }}>
+        <div className="admin-nav-tabs" style={{ display: 'flex', gap: '8px', alignItems: 'center', overflowX: 'auto', padding: '4px 0' }}>
           {[
             { key: 'overview', icon: 'fa-gauge-high', label: 'Overview' },
             { key: 'users', icon: 'fa-users', label: 'Users' },
@@ -415,7 +416,7 @@ export default function Admin() {
             }}>
               A
             </div>
-            <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>Admin Portal</span>
+            <span className="admin-user-title" style={{ fontWeight: 600, fontSize: '0.9rem' }}>Admin Portal</span>
           </div>
 
           <button
@@ -440,7 +441,7 @@ export default function Admin() {
       </nav>
 
       {/* Main Container */}
-      <main style={{ maxWidth: '1400px', margin: '0 auto', padding: '30px 40px' }}>
+      <main className="admin-main-container" style={{ maxWidth: '1400px', margin: '0 auto', padding: '30px 40px' }}>
         
         {/* TAB 1: OVERVIEW */}
         {activeTab === 'overview' && (
