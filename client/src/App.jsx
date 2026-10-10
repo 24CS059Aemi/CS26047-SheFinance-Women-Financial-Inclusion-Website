@@ -15,6 +15,8 @@ import Profile from './pages/Profile';
 import Admin from './pages/Admin';
 import Support from './pages/Support';
 
+import FloatingChatbotBtn from './components/FloatingChatbotBtn';
+
 function ProtectedRoute({ children }) {
   const token = localStorage.getItem('token');
   if (!token) return <Navigate to="/login" replace />;
@@ -50,6 +52,7 @@ function App() {
         <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      <FloatingChatbotBtn />
     </BrowserRouter>
   );
 }
