@@ -174,6 +174,7 @@ export default function Chatbot() {
   const [avatar, setAvatar] = useState('');
   const [chatHistory, setChatHistory] = useState([]);
   const [currentChatId, setCurrentChatId] = useState(() => Date.now().toString());
+  const [historyDrawerOpen, setHistoryDrawerOpen] = useState(false);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -339,23 +340,32 @@ export default function Chatbot() {
                   <p><span className="status-dot"></span> Online • Intelligent Financial Assistant</p>
                 </div>
               </div>
-              <div className="chatbot-header-badge" style={{ flexShrink: 0 }}>
-                <span style={{ 
-                  padding: '6px 14px', 
-                  fontSize: '0.8rem', 
-                  border: '1px solid rgba(201, 159, 85, 0.5)', 
-                  background: 'rgba(201, 159, 85, 0.18)', 
-                  color: '#ffffff', 
-                  borderRadius: '20px', 
-                  fontWeight: 600,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  whiteSpace: 'nowrap',
-                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)'
-                }}>
-                  <i className="fa-solid fa-sparkles" style={{ color: 'var(--secondary-color)' }}></i> AI Powered
-                </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+                <button 
+                  className="mobile-chat-history-btn"
+                  onClick={() => setHistoryDrawerOpen(!historyDrawerOpen)}
+                  title="View Chat History"
+                >
+                  <i className="fa-solid fa-clock-rotate-left"></i> History
+                </button>
+                <div className="chatbot-header-badge">
+                  <span style={{ 
+                    padding: '6px 14px', 
+                    fontSize: '0.8rem', 
+                    border: '1px solid rgba(201, 159, 85, 0.5)', 
+                    background: 'rgba(201, 159, 85, 0.18)', 
+                    color: '#ffffff', 
+                    borderRadius: '20px', 
+                    fontWeight: 600,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    whiteSpace: 'nowrap',
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)'
+                  }}>
+                    <i className="fa-solid fa-sparkles" style={{ color: 'var(--secondary-color)' }}></i> AI Powered
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -428,6 +438,56 @@ export default function Chatbot() {
             </div>
           </div>
         </div>
+
+        {/* Mobile History Drawer / Modal */}
+        {historyDrawerOpen && (
+          <div className="mobile-history-overlay" onClick={() => setHistoryDrawerOpen(false)}>
+            <div className="mobile-history-drawer" onClick={(e) => e.stopPropagation()}>
+              <div className="mobile-history-header">
+                <h3><i className="fa-solid fa-clock-rotate-left" style={{ color: 'var(--secondary-color)', marginRight: '8px' }}></i> Chat History</h3>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <button className="new-chat-btn" onClick={() => { startNewChat(); setHistoryDrawerOpen(false); }} title="New Chat" style={{ padding: '6px 12px', background: 'var(--secondary-color)', color: '#fff', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}>
+                    <i className="fa-solid fa-plus"></i> New Chat
+                  </button>
+                  <button className="close-drawer-btn" onClick={() => setHistoryDrawerOpen(false)}>
+                    <i className="fa-solid fa-xmark"></i>
+                  </button>
+                </div>
+              </div>
+              <div className="mobile-history-body">
+                {chatHistory.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '40px 15px', color: '#888' }}>
+                    <i className="fa-solid fa-comments" style={{ fontSize: '2.5rem', color: '#ccc', marginBottom: '10px', display: 'block' }}></i>
+                    <p style={{ fontSize: '0.9rem' }}>No chat history yet.</p>
+                  </div>
+                ) : (
+                  chatHistory.map(entry => (
+                    <div 
+                      key={entry.id} 
+                      className={`mobile-history-item ${entry.id === currentChatId ? 'active' : ''}`} 
+                      onClick={() => { loadChat(entry); setHistoryDrawerOpen(false); }}
+                    >
+                      <div className="history-item-icon">
+                        <i className="fa-solid fa-message"></i>
+                      </div>
+                      <div className="history-item-details">
+                        <p className="history-title">{entry.title}</p>
+                        <span className="history-date">{entry.date}</span>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+              {chatHistory.length > 0 && (
+                <div className="mobile-history-footer">
+                  <button onClick={() => { clearHistory(); setHistoryDrawerOpen(false); }}>
+                    <i className="fa-solid fa-trash"></i> Clear History
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );

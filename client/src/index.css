@@ -4066,3 +4066,171 @@ footer {
     padding: 16px 10px !important;
   }
 }
+
+/* ===== Mobile Chatbot History Drawer & Button Styling ===== */
+.mobile-chat-history-btn {
+  display: none;
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 20px;
+  padding: 5px 12px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  align-items: center;
+  gap: 5px;
+  font-family: 'Outfit', sans-serif;
+  transition: all 0.2s ease;
+}
+
+.mobile-chat-history-btn:hover {
+  background: var(--secondary-color);
+  border-color: var(--secondary-color);
+}
+
+@media (max-width: 768px) {
+  .mobile-chat-history-btn {
+    display: inline-flex !important;
+  }
+}
+
+.mobile-history-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(14, 35, 44, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 10000;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  padding: 0;
+}
+
+.mobile-history-drawer {
+  background: #ffffff;
+  width: 100%;
+  max-height: 80vh;
+  border-radius: 24px 24px 0 0;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.mobile-history-header {
+  padding: 16px 20px;
+  background: var(--primary-color);
+  color: #ffffff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.mobile-history-header h3 {
+  color: #ffffff;
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.close-drawer-btn {
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  font-size: 1.3rem;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.mobile-history-body {
+  padding: 16px;
+  overflow-y: auto;
+  max-height: 55vh;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mobile-history-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 1.5px solid #edf2f7;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mobile-history-item.active {
+  background: rgba(201, 159, 85, 0.12);
+  border-color: var(--secondary-color);
+}
+
+.history-item-icon {
+  width: 36px;
+  height: 36px;
+  background: rgba(27, 54, 68, 0.08);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary-color);
+  font-size: 0.95rem;
+  flex-shrink: 0;
+}
+
+.mobile-history-item.active .history-item-icon {
+  background: var(--secondary-color);
+  color: #ffffff;
+}
+
+.history-item-details {
+  flex: 1;
+  overflow: hidden;
+}
+
+.history-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--primary-color);
+  margin: 0 0 2px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.history-date {
+  font-size: 0.75rem;
+  color: #888;
+}
+
+.mobile-history-footer {
+  padding: 14px 20px;
+  border-top: 1px solid #edf2f7;
+  background: #ffffff;
+}
+
+.mobile-history-footer button {
+  width: 100%;
+  padding: 12px;
+  background: rgba(231, 76, 60, 0.1);
+  color: #e74c3c;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  font-family: 'Outfit', sans-serif;
+}
