@@ -131,6 +131,7 @@ export default function Education() {
   const [announcement, setAnnouncement] = useState('');
   const [selectedTopicId, setSelectedTopicId] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   
   // Scheme Modal state
   const [activeModalKey, setActiveModalKey] = useState(null);
@@ -210,6 +211,7 @@ export default function Education() {
 
   function handleSelectTopic(id) {
     setSelectedTopicId(id);
+    setMobileDrawerOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -325,22 +327,23 @@ export default function Education() {
           </div>
         )}
 
+        {/* Mobile Coursera-style Course Topic Drawer Button */}
+        <button 
+          className="education-mobile-toggle"
+          onClick={() => setMobileDrawerOpen(!mobileDrawerOpen)}
+        >
+          <span>
+            <i className="fa-solid fa-book-open" style={{ color: 'var(--secondary-color)', marginRight: '8px' }}></i>
+            {currentTopic ? currentTopic.title : 'Select Topic / Lesson'}
+          </span>
+          <i className={`fa-solid ${mobileDrawerOpen ? 'fa-chevron-up' : 'fa-chevron-down'}`}></i>
+        </button>
+
         {/* Main Education Layout */}
-        <div style={{ display: 'flex', gap: '30px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+        <div className="education-layout">
           
           {/* Left Sidebar */}
-          <aside style={{
-            width: '320px',
-            flexShrink: 0,
-            background: '#ffffff',
-            borderRadius: '15px',
-            padding: '20px',
-            boxShadow: '0 5px 15px rgba(0,0,0,0.05)',
-            maxHeight: 'calc(100vh - 120px)',
-            overflowY: 'auto',
-            position: 'sticky',
-            top: '90px'
-          }}>
+          <aside className={`education-sidebar${mobileDrawerOpen ? ' mobile-visible' : ''}`}>
             <div style={{ marginBottom: '15px' }}>
               <input
                 type="text"
@@ -468,7 +471,7 @@ export default function Education() {
           </aside>
 
           {/* Right Content Area */}
-          <section style={{
+          <section className="education-content-wrapper" style={{
             flex: 1,
             background: '#ffffff',
             borderRadius: '15px',

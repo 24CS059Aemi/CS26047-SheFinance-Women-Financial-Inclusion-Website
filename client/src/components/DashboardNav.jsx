@@ -14,6 +14,7 @@ const navItems = [
 
 export default function DashboardNav() {
   const [scrolled, setScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -35,26 +36,41 @@ export default function DashboardNav() {
   }
 
   return (
-    <aside className={`sidebar${scrolled ? ' scrolled' : ''}`}>
+    <aside className={`sidebar${scrolled ? ' scrolled' : ''}${mobileMenuOpen ? ' mobile-expanded' : ''}`}>
       <div className="sidebar-logo">
-        <Link to="/dashboard"><h2>She<span>Finance</span></h2></Link>
-      </div>
-      <ul className="sidebar-menu">
-        {navItems.map(item => (
-          <li key={item.path} className={location.pathname === item.path ? 'active' : ''}>
-            <Link to={item.path}><i className={item.icon}></i> {item.label}</Link>
-          </li>
-        ))}
-        <li className={location.pathname === '/support' ? 'active' : ''}>
-          <Link to="/support">
-            <i className="fa-solid fa-headset"></i> Help &amp; Support
-          </Link>
-        </li>
-      </ul>
-      <div className="sidebar-bottom">
-        <button className="logout-btn" onClick={logout}>
-          <i className="fa-solid fa-right-from-bracket"></i> Logout
+        <Link to="/dashboard" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <img src="/logo.png" alt="SheFinance Emblem" style={{ height: '44px', width: 'auto', borderRadius: '8px', objectFit: 'contain' }} />
+          <h2>She<span>Finance</span></h2>
+        </Link>
+        <button 
+          className="sidebar-mobile-toggle"
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          aria-label="Toggle App Menu"
+        >
+          <i className={`fa-solid ${mobileMenuOpen ? 'fa-xmark' : 'fa-bars'}`}></i>
         </button>
+      </div>
+
+      <div className={`sidebar-menu-wrapper${mobileMenuOpen ? ' mobile-open' : ''}`}>
+        <ul className="sidebar-menu">
+          {navItems.map(item => (
+            <li key={item.path} className={location.pathname === item.path ? 'active' : ''}>
+              <Link to={item.path} onClick={() => setMobileMenuOpen(false)}>
+                <i className={item.icon}></i> {item.label}
+              </Link>
+            </li>
+          ))}
+          <li className={location.pathname === '/support' ? 'active' : ''}>
+            <Link to="/support" onClick={() => setMobileMenuOpen(false)}>
+              <i className="fa-solid fa-headset"></i> Help &amp; Support
+            </Link>
+          </li>
+        </ul>
+        <div className="sidebar-bottom">
+          <button className="logout-btn" onClick={logout}>
+            <i className="fa-solid fa-right-from-bracket"></i> Logout
+          </button>
+        </div>
       </div>
     </aside>
   );

@@ -14,7 +14,10 @@ export default function Navbar() {
     <nav className={`navbar${scrolled ? ' scrolled' : ''}`}>
       <div className="container nav-container">
         <div className="logo">
-          <h2>She<span>Finance</span></h2>
+          <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <img src="/logo.png" alt="SheFinance Emblem" style={{ height: '46px', width: 'auto', borderRadius: '8px', objectFit: 'contain' }} />
+            <h2>She<span>Finance</span></h2>
+          </Link>
         </div>
         <ul className="nav-links">
           <li><a href="/#home">Home</a></li>

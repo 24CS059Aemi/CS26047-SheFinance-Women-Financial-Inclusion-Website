@@ -339,9 +339,22 @@ export default function Chatbot() {
                   <p><span className="status-dot"></span> Online • Intelligent Financial Assistant</p>
                 </div>
               </div>
-              <div className="chatbot-header-badge">
-                <span style={{ padding: '5px 14px', fontSize: '0.78rem', border: '1px solid rgba(255,255,255,0.3)', background: 'rgba(255,255,255,0.15)', color: '#fff', borderRadius: '20px', fontWeight: 600 }}>
-                  <i className="fa-solid fa-sparkles" style={{ color: 'var(--secondary-color)', marginRight: '6px' }}></i> AI Powered
+              <div className="chatbot-header-badge" style={{ flexShrink: 0 }}>
+                <span style={{ 
+                  padding: '6px 14px', 
+                  fontSize: '0.8rem', 
+                  border: '1px solid rgba(201, 159, 85, 0.5)', 
+                  background: 'rgba(201, 159, 85, 0.18)', 
+                  color: '#ffffff', 
+                  borderRadius: '20px', 
+                  fontWeight: 600,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  whiteSpace: 'nowrap',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)'
+                }}>
+                  <i className="fa-solid fa-sparkles" style={{ color: 'var(--secondary-color)' }}></i> AI Powered
                 </span>
               </div>
             </div>

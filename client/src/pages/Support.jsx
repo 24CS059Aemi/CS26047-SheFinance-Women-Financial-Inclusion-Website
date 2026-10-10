@@ -89,7 +89,7 @@ export default function Support() {
       )}
 
       {/* Header Banner */}
-      <div style={{ background: 'linear-gradient(135deg, var(--primary-color) 0%, #2a5266 100%)', borderRadius: '20px', padding: '40px', color: '#fff', marginBottom: '35px', boxShadow: '0 10px 30px rgba(27,54,68,0.12)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px' }}>
+      <div className="support-banner" style={{ background: 'linear-gradient(135deg, var(--primary-color) 0%, #2a5266 100%)', borderRadius: '20px', padding: '40px', color: '#fff', marginBottom: '35px', boxShadow: '0 10px 30px rgba(27,54,68,0.12)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px' }}>
         <div>
           <span style={{ background: 'rgba(201,159,85,0.25)', color: 'var(--secondary-color)', padding: '6px 14px', borderRadius: '20px', fontSize: '0.82rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
             <i className="fa-solid fa-headset" style={{ marginRight: '6px' }}></i> Help &amp; Support Center
@@ -101,7 +101,7 @@ export default function Support() {
             Submit an inquiry to our financial counseling team, explore quick FAQs, or contact official national helplines for urgent assistance.
           </p>
         </div>
-        <div style={{ display: 'flex', gap: '12px' }}>
+        <div className="support-banner-buttons" style={{ display: 'flex', gap: '12px' }}>
           <Link to="/chatbot" className="btn btn-outline" style={{ borderColor: 'rgba(255,255,255,0.4)', color: '#fff' }}>
             <i className="fa-solid fa-robot"></i> Ask AI Advisor
           </Link>
@@ -111,7 +111,7 @@ export default function Support() {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: '30px', alignItems: 'start' }}>
+      <div className="support-main-grid" style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: '30px', alignItems: 'start' }}>
         {/* Left Column: Submit Ticket & Past Inquiries */}
         <div>
           <div style={{ background: '#fff', borderRadius: '16px', padding: '30px', boxShadow: '0 5px 20px rgba(0,0,0,0.04)', border: '1px solid #edf2f7', marginBottom: '30px' }}>
@@ -123,7 +123,7 @@ export default function Support() {
             </p>
 
             <form onSubmit={handleSubmit}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '16px' }}>
+              <div className="support-form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '16px' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-dark)', marginBottom: '6px' }}>Category</label>
                   <select
