@@ -3,8 +3,11 @@ import { Link, useLocation } from 'react-router-dom';
 export default function FloatingChatbotBtn() {
   const location = useLocation();
 
-  // Hide button if already on Chatbot page or Auth/Onboarding pages
-  if (location.pathname === '/chatbot' || location.pathname === '/login' || location.pathname === '/register' || location.pathname === '/onboarding') {
+  const token = localStorage.getItem('token');
+  const hiddenPages = ['/', '/login', '/register', '/onboarding', '/chatbot', '/admin'];
+
+  // Hide button if user is unauthenticated or on Home/Login/Register/Chatbot pages
+  if (!token || hiddenPages.includes(location.pathname)) {
     return null;
   }
 
