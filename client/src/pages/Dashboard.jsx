@@ -145,7 +145,7 @@ export default function Dashboard() {
       <main className="dashboard-main">
         <header className="dashboard-header">
           <div className="header-title">
-            <h2>Welcome back, {userName}! 👋</h2>
+            <h2>Welcome back, {userName}!</h2>
             <p>Here is your financial summary for this month.</p>
           </div>
           <Link to="/profile" className="header-profile-link" title="Click to manage Profile & Settings">

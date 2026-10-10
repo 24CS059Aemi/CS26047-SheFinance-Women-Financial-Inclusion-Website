@@ -13,7 +13,7 @@ const QUICK_QUESTIONS = [
 
 const WELCOME_MSG = {
   role: 'bot',
-  text: 'Hello! 👋 I am **SheFinance AI**, your intelligent financial advisor. I can assist you with:\n\n• 💡 Budgeting strategies & 50/30/20 rule\n• 🧮 SIP, EMI, Compound Interest calculations\n• 🏛️ Government schemes for women (Mudra, SSY, MSSC, Stand-Up India)\n• 📈 Investment basics & savings tips\n• ⚡ Debt management strategies\n\nHow can I help you today?',
+  text: 'Hello! I am **SheFinance AI**, your intelligent financial advisor. I can assist you with:\n\n• 💡 Budgeting strategies & 50/30/20 rule\n• 🧮 SIP, EMI, Compound Interest calculations\n• 🏛️ Government schemes for women (Mudra, SSY, MSSC, Stand-Up India)\n• 📈 Investment basics & savings tips\n• ⚡ Debt management strategies\n\nHow can I help you today?',
   time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
 };
 
